@@ -18,14 +18,28 @@ type Greeting struct {
 }
 
 var (
+    /* templates = template.Must(template.ParseFiles(
+        "templates/home.html",
+        "templates/admin.html",
+        "templates/post_edit.html",
+    ))*/
     templates = template.Must(template.ParseFiles(
-        "template/home.html",
-        "template/admin.html",
-        "template/post_edit.html",
+        "templates/themes/twentyten/index.html",
+        "templates/themes/twentyten/header.html",
+        "templates/themes/twentyten/footer.html",
+        "templates/themes/twentyten/loop.html",
+        "templates/themes/twentyten/sidebar.html",
     ))
+
+    blog = make(map[string]string)
 )
 
 func init() {
+    blog["charset"] = "UTF-8"
+    blog["name"] = "Vika's Blog"
+    blog["description"] = "a longer way"
+    blog["siteurl"] = ""
+
     http.HandleFunc("/", handleHome)
     http.HandleFunc("/guest", guestHandler)
     http.HandleFunc("/sign", sign)
@@ -43,20 +57,32 @@ func serveError(c appengine.Context, w http.ResponseWriter, err error) {
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)
-    q := datastore.NewQuery("Greeting").Order("-Date").Limit(10)
-    greetings := make([]Greeting, 0, 10)
-    if _, err := q.GetAll(c, &greetings); err != nil {
+
+    posts, err := getLatestPosts(c, 10)
+    if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
+
     /*if err := guestbookTemplate.Execute(w, greetings); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }*/
-    if err := templates.ExecuteTemplate(w, "home.html", greetings); err != nil {
+    /* if err := templates.ExecuteTemplate(w, "home.html", posts); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }*/
+
+    /* for i := 0; i < len(posts); i++ {
+       posts[i].HTMLContent = template.HTML(posts[i].Content)
+     }*/
+
+    data := make(map[string]interface{})
+    data["posts"] = posts
+    data["blog"] = blog
+    if err := templates.Execute(w, data); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }
-}
 
+}
 
 func home(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)
@@ -110,7 +136,6 @@ const guestbookTemplateHTML = `
 </html>
 `
 
-
 const gustbookForm = `
 <html>
     <body>
@@ -121,6 +146,7 @@ const gustbookForm = `
     </body>
 </html>
 `
+
 func sign(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)
     g := Greeting{
@@ -129,7 +155,7 @@ func sign(w http.ResponseWriter, r *http.Request) {
     }
 
     if u := user.Current(c); u != nil {
-        g.Author = u.String()       
+        g.Author = u.String()
     }
 
     _, err := datastore.Put(c, datastore.NewIncompleteKey(c, "Greeting", nil), &g)
@@ -139,9 +165,9 @@ func sign(w http.ResponseWriter, r *http.Request) {
     }
 
     /*err := signTemplate.Execute(w, r.FormValue("content"))
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-    }*/
+      if err != nil {
+          http.Error(w, err.Error(), http.StatusInternalServerError)
+      }*/
     http.Redirect(w, r, "/", http.StatusFound)
 }
 
@@ -171,5 +197,3 @@ func guestHandler(w http.ResponseWriter, r *http.Request) {
     }
     fmt.Fprint(w, "Hello, world!", u)
 }
-
-

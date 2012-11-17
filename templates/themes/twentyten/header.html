@@ -1,0 +1,32 @@
+{{define "HEADER"}}<!DOCTYPE html>
+<html dir="ltr" lang="en-US">
+<head>
+<meta charset="UTF-8" />
+<title>{{ .blog.name }} | {{ .blog.description }}</title>
+<link rel="profile" href="http://gmpg.org/xfn/11" />
+<link rel="stylesheet" type="text/css" media="all" href="{{.blog.siteurl}}/static/themes/twentyten/style.css" />
+</head>
+
+<body>
+<div id="wrapper" class="hfeed">
+	<div id="header">
+		<div id="masthead">
+			<div id="branding" role="banner">
+				<h1 id="site-title">
+					<span>
+						<a href="{{.blog.siteurl}}/" title="{{ .blog.name }}" rel="home">{{ .blog.name }}</a>
+					</span>
+				</h1>
+				<div id="site-description">{{ .blog.description }}</div>
+						<img src="{{.blog.siteurl}}/static/themes/twentyten/images/headers/berries.jpg" width="940" height="198" alt="" />
+			</div><!-- #branding -->
+
+			<div id="access" role="navigation">
+				<div class="skip-link screen-reader-text"><a href="#content" title="Skip to content">Skip to content</a></div>
+				<div class="menu"><ul><li class="current_page_item"><a href="{{.blog.siteurl}}/" title="Home">Home</a></li><li class="page_item page-item-2"><a href="{{.blog.siteurl}}/?page_id=2">Sample Page</a></li></ul></div>
+			</div><!-- #access -->
+		</div><!-- #masthead -->
+	</div><!-- #header -->
+
+	<div id="main">
+{{end}}

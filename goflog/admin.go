@@ -44,19 +44,21 @@ func savePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func admin(w http.ResponseWriter, r *http.Request) {
-    if err := templates.ExecuteTemplate(w, "admin.html", nil); err != nil {
+    /*if err := templates.ExecuteTemplate(w, "admin.html", nil); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
+    }*/
+    http.ServeFile(w, r, "templates/admin.html")
 }
 
 func postEdit(w http.ResponseWriter, r *http.Request) {
-    if (r.Method == "GET") {
-      if err := templates.ExecuteTemplate(w, "post_edit.html", nil); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-      }
-    return;
+    if r.Method == "GET" {
+        /*if err := templates.ExecuteTemplate(w, "post_edit.html", nil); err != nil {
+          http.Error(w, err.Error(), http.StatusInternalServerError)
+        }*/
+        http.ServeFile(w, r, "templates/post_edit.html")
+        return
     }
     //POST
     //fmt.Fprint(w, r.FormValue("content"));
-savePost(w, r);
+    savePost(w, r)
 }

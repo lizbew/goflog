@@ -1,0 +1,33 @@
+{{define "LOOP"}}
+
+{{$blog := .blog}}
+{{range .posts}}
+		<div id="post-ID" class="post type-post status-publish format-standard hentry">
+			<h2 class="entry-title"><a href="{{$blog.siteurl}}/p" title="Permalink to {{.Title}}" rel="bookmark">{{.Title}}</a></h2>
+
+			<div class="entry-meta">
+				
+				<span class="meta-prep meta-prep-author">Posted on</span> <span class="entry-date">{{.DispCreatedTime }}</span> <span class="meta-sep">by</span> <span class="author vcard">{{ .AuthorObj.Nicename }}</span>
+			</div><!-- .entry-meta -->
+
+			<div class="entry-content">
+				{{.HTMLContent}}
+			</div><!-- .entry-content -->
+
+			<div class="entry-utility">
+				<span class="cat-links">
+					<span class="entry-utility-prep entry-utility-prep-cat-links">Posted in</span>Category
+				</span>
+				<span class="meta-sep">|</span>
+				<span class="tag-links">
+					<span class="entry-utility-prep entry-utility-prep-tag-links">Tagged</span> tag
+				</span>
+				<span class="meta-sep">|</span>
+				<span class="comments-link"><a href="/?p=4#respond" title="Comment on tst post">Leave a comment</a></span>
+				
+			</div><!-- .entry-utility -->
+		</div><!-- #post-## -->
+
+{{end}}
+{{end}}
+
