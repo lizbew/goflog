@@ -9,6 +9,8 @@ import (
     "io"
     "net/http"
     "time"
+    "strconv"
+   "log"
 )
 
 type Greeting struct {
@@ -30,7 +32,24 @@ var (
         "templates/themes/twentyten/loop.html",
         "templates/themes/twentyten/sidebar.html",
     ))
-
+    tmplPostList =
+    template.Must(template.ParseFiles("templates/post_list.html"))
+    tmplPostEdit =
+    template.Must(template.ParseFiles("templates/post_edit.html"))
+    tmplPost = template.Must(template.ParseFiles(
+        "templates/themes/twentyten/single.html",
+        "templates/themes/twentyten/header.html",
+        "templates/themes/twentyten/footer.html",
+        "templates/themes/twentyten/loop-single.html",
+        "templates/themes/twentyten/sidebar.html",
+        "templates/themes/twentyten/comments.html",
+        "templates/themes/twentyten/comment-form.html",
+    ))
+    tmpl404 = template.Must(template.ParseFiles(
+       "templates/themes/twentyten/404.html",
+       "templates/themes/twentyten/header.html",
+        "templates/themes/twentyten/footer.html",
+    ))
     blog = make(map[string]string)
 )
 
@@ -44,8 +63,9 @@ func init() {
     http.HandleFunc("/guest", guestHandler)
     http.HandleFunc("/sign", sign)
     http.HandleFunc("/admin", admin)
-    http.HandleFunc("/admin/post", postEdit)
-    http.HandleFunc("/post", home)
+    http.HandleFunc("/admin/post", handlePostList)
+    http.HandleFunc("/admin/post/edit", postEdit)
+    http.HandleFunc("/post", handleViewPost)
 }
 
 func serveError(c appengine.Context, w http.ResponseWriter, err error) {
@@ -53,6 +73,14 @@ func serveError(c appengine.Context, w http.ResponseWriter, err error) {
     w.Header().Set("Content-Type", "text/plain; charset=utf-8")
     io.WriteString(w, "Internal Server Error")
     c.Errorf("%v", err)
+}
+
+func serveNotFound(w http.ResponseWriter, r *http.Request) {
+    data := make(map[string]interface{})
+    data["Blog"] = blog
+    if err := tmpl404.Execute(w, data); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
@@ -77,12 +105,49 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 
     data := make(map[string]interface{})
     data["posts"] = posts
-    data["blog"] = blog
+    data["Blog"] = blog
     if err := templates.Execute(w, data); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }
 
 }
+
+func handleViewPost(w http.ResponseWriter, r *http.Request) {
+        c := appengine.NewContext(r)
+    var postID int64
+    var post *Post = nil
+    //var postKey *datastore.Key
+
+    idStr := r.FormValue("id")
+    if i,err := strconv.Atoi(idStr); err != nil {
+              c.Infof("Failed to convert str to int64: ", i)            
+          } else {
+            postID = int64(i)
+            //postKey = CreatePostKey(c, postID)
+            post = GetPostByID(c, postID)
+         }
+    posts := make([]Post, 1 ,1)
+    if post != nil {
+      posts[0] = *post
+      //append(posts, *post)
+   } else {
+    log.Print("Post not found for URL", r.URL.Path)
+  serveNotFound(w, r)
+return
+    }
+
+  model := struct {
+    Posts []Post
+    Blog map[string]string
+  } {
+    posts,blog,
+  }
+  
+    if err := tmplPost.Execute(w, model); err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+    }
+}
+
 
 func home(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)

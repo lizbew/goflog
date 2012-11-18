@@ -1,0 +1,18 @@
+{{define "COMMENT-FORM"}}
+			<div id="respond">
+				<h3 id="reply-title">Leave a Reply <small><a rel="nofollow" id="cancel-comment-reply-link" href="#" style="display:none;">Cancel reply</a></small></h3>
+					<form action="/comments" method="post" id="commentform">
+						<p class="comment-notes">Your email address will not be published. Required fields are marked <span class="required">*</span></p>
+						<p class="comment-form-author"><label for="author">Name</label> <span class="required">*</span><input id="author" name="author" type="text" value="" size="30" aria-required='true' /></p>
+						<p class="comment-form-email"><label for="email">Email</label> <span class="required">*</span><input id="email" name="email" type="text" value="" size="30" aria-required='true' /></p>
+						<p class="comment-form-url"><label for="url">Website</label><input id="url" name="url" type="text" value="" size="30" /></p>
+						<p class="comment-form-comment"><label for="comment">Comment</label><textarea id="comment" name="comment" cols="45" rows="8" aria-required="true"></textarea></p>
+						<p class="form-allowed-tags">You may use these <abbr title="HyperText Markup Language">HTML</abbr> tags and attributes:  <code>&lt;strong&gt;</code></p>
+						<p class="form-submit">
+							<input name="submit" type="submit" id="submit" value="Post Comment" />
+							<input type='hidden' name='comment_post_ID' value='{{.ID}}' id='comment_post_ID' />
+							<input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+						</p>
+					</form>
+			</div><!-- #respond -->
+{{end}}

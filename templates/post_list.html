@@ -1,0 +1,36 @@
+<html>
+<head>
+<title>Post List</title>
+<style type="text/css">
+#post-table{
+border-top: 1px solid gray;
+border-left: 1px solid gray;
+}
+#post-table td, #post-table th{
+border-right: 1px solid gray;
+border-bottom: 1px solid gray;
+}
+</style>
+<script src="http://yui.yahooapis.com/3.7.3/build/yui/yui-min.js"></script>
+</head>
+  <body>
+<table id="post-table">
+  <thead>
+    <tr>
+      <th>ID</th><th>Title</th>
+    </tr>
+  </thead>
+  <tbody>
+{{range $i,$p := .Posts}}
+    <tr>
+      <td>{{$i}}</td><td><a href="./post/edit?id={{$p.ID}}" title="{{$p.Title}}">{{$p.Title}}</a></td>
+    </tr>
+{{else}}
+    <tr>
+      <td colspan="2">no post found</td>
+    </tr>
+{{end}}
+  </tbody>
+</table>
+  </body>
+</html>

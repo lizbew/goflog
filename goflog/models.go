@@ -4,6 +4,7 @@ import (
     "appengine/datastore"
     "html/template"
     "time"
+    "strconv"
 )
 
 type Blog struct {
@@ -28,6 +29,7 @@ type Comment struct {
 }
 
 type Post struct {
+    ID     int64
     Title     string
     Content   string
     Author    *datastore.Key
@@ -42,6 +44,18 @@ func (p *Post) HTMLContent() template.HTML {
 
 func (p *Post) DispCreatedTime() string {
     return p.Created.Format("Jan 02, 2006Z08:00")[0:12]
+}
+
+func (p *Post) GetPermalink() string {
+  return blog["siteurl"] + "/post?id=" + strconv.Itoa(int(p.ID))
+}
+
+func (p *Post) HaveComments() bool {
+  return false
+}
+
+func (p *Post) CommentsCount() int {
+  return 0
 }
 
 /*func (p *Post) getAuthorDisplay() string {
