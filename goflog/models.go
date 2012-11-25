@@ -3,14 +3,14 @@ package goflog
 import (
     "appengine/datastore"
     "html/template"
-    "time"
     "strconv"
+    "time"
 )
 
 const (
-  TaxonomyCategory string = "category"
-  TaxonomyLinkCategory string = "link_category"
-  TaxonomyPostTag string = "post_tag"
+    TaxonomyCategory     string = "category"
+    TaxonomyLinkCategory string = "link_category"
+    TaxonomyPostTag      string = "post_tag"
 )
 
 type Blog struct {
@@ -18,38 +18,38 @@ type Blog struct {
 }
 
 type Term struct {
-  ID int64 `datastore:"-"`
-  Name string
-  Taxonomy string
-  Description string
-  Count int
+    ID          int64 `datastore:"-"`
+    Name        string
+    Taxonomy    string
+    Description string
+    Count       int
 }
 
-func NewTerm(id int64, name,taxonomy string) *Term {
-  //term := make(Term)
-  /* var term Term
-  term.Name = name
-  term.Taxonomy = taxonomy
-  term.Count = 0 */
-  term := Term {
-   ID : id,
-   Name : name,
-   Taxonomy : taxonomy,
-   Count :0,
-  }
-  return &term
+func NewTerm(id int64, name, taxonomy string) *Term {
+    //term := make(Term)
+    /* var term Term
+    term.Name = name
+    term.Taxonomy = taxonomy
+    term.Count = 0 */
+    term := Term{
+        ID:       id,
+        Name:     name,
+        Taxonomy: taxonomy,
+        Count:    0,
+    }
+    return &term
 }
 
 func (term *Term) IsOfCategory() bool {
-  return TaxonomyCategory == term.Taxonomy
+    return TaxonomyCategory == term.Taxonomy
 }
 
 func (term *Term) IsOfLinkCategory() bool {
-  return TaxonomyLinkCategory == term.Taxonomy
+    return TaxonomyLinkCategory == term.Taxonomy
 }
 
 func (term *Term) IsOfPostTag() bool {
-  return TaxonomyPostTag == term.Taxonomy
+    return TaxonomyPostTag == term.Taxonomy
 }
 
 type User struct {
@@ -70,7 +70,7 @@ type Comment struct {
 }
 
 type Post struct {
-    ID     int64
+    ID        int64
     Title     string
     Content   string
     Published bool
@@ -93,15 +93,15 @@ func (p *Post) DispCreatedTime() string {
 }
 
 func (p *Post) GetPermalink() string {
-  return blog["siteurl"] + "/post?id=" + strconv.Itoa(int(p.ID))
+    return blog["siteurl"] + "/post?id=" + strconv.Itoa(int(p.ID))
 }
 
 func (p *Post) HaveComments() bool {
-  return false
+    return false
 }
 
 func (p *Post) CommentsCount() int {
-  return 0
+    return 0
 }
 
 /*func (p *Post) getAuthorDisplay() string {

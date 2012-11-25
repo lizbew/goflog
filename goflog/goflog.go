@@ -7,10 +7,10 @@ import (
     "fmt"
     "html/template"
     "io"
+    "log"
     "net/http"
-    "time"
     "strconv"
-   "log"
+    "time"
 )
 
 type Greeting struct {
@@ -32,10 +32,8 @@ var (
         "templates/themes/twentyten/loop.html",
         "templates/themes/twentyten/sidebar.html",
     ))
-    tmplPostList =
-    template.Must(template.ParseFiles("templates/post_list.html"))
-    tmplPostEdit =
-    template.Must(template.ParseFiles("templates/post_edit.html"))
+    tmplPostList = template.Must(template.ParseFiles("templates/post_list.html"))
+    tmplPostEdit = template.Must(template.ParseFiles("templates/post_edit.html"))
     tmplPost = template.Must(template.ParseFiles(
         "templates/themes/twentyten/single.html",
         "templates/themes/twentyten/header.html",
@@ -46,12 +44,12 @@ var (
         "templates/themes/twentyten/comment-form.html",
     ))
     tmpl404 = template.Must(template.ParseFiles(
-       "templates/themes/twentyten/404.html",
-       "templates/themes/twentyten/header.html",
+        "templates/themes/twentyten/404.html",
+        "templates/themes/twentyten/header.html",
         "templates/themes/twentyten/footer.html",
     ))
     tmplTerm = template.Must(template.ParseFiles("templates/term.html"))
-    blog = make(map[string]string)
+    blog     = make(map[string]string)
 )
 
 func init() {
@@ -120,7 +118,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleViewPost(w http.ResponseWriter, r *http.Request) {
-        c := appengine.NewContext(r)
+    c := appengine.NewContext(r)
     var postID int64
     var post *Post = nil
     //var postKey *datastore.Key
@@ -130,37 +128,37 @@ func handleViewPost(w http.ResponseWriter, r *http.Request) {
     singlePost := true
     var posts []Post
 
-    if i,err := strconv.Atoi(idStr); err != nil {
-              c.Infof("Failed to convert str to int64: ", i)            
-          } else {
-            postID = int64(i)
-            //postKey = CreatePostKey(c, postID)
-            post = GetPostByID(c, postID)
-         }
-    if post != nil && post.Published {
-      //posts[0] = *post
-      posts = append(posts, *post)
-   } else if category != ""{
-     posts = GetPostByCategory(c, category, true)
-     singlePost = false
+    if i, err := strconv.Atoi(idStr); err != nil {
+        c.Infof("Failed to convert str to int64: ", i)
     } else {
-    log.Print("Post not found for URL", r.URL.Path)
-  serveNotFound(w, r)
-return
-}
+        postID = int64(i)
+        //postKey = CreatePostKey(c, postID)
+        post = GetPostByID(c, postID)
+    }
+    if post != nil && post.Published {
+        //posts[0] = *post
+        posts = append(posts, *post)
+    } else if category != "" {
+        posts = GetPostByCategory(c, category, true)
+        singlePost = false
+    } else {
+        log.Print("Post not found for URL", r.URL.Path)
+        serveNotFound(w, r)
+        return
+    }
 
-  model := struct {
-    Posts []Post
-    Blog map[string]string
-    Categories []Term
-  } {
-    posts,blog, GetCategories(c),
-  }
-  
-   tmpl := tmplPost
-  if (!singlePost) {
-   tmpl = templates
-   }
+    model := struct {
+        Posts      []Post
+        Blog       map[string]string
+        Categories []Term
+    }{
+        posts, blog, GetCategories(c),
+    }
+
+    tmpl := tmplPost
+    if !singlePost {
+        tmpl = templates
+    }
 
     if err := tmpl.Execute(w, model); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
