@@ -1,7 +1,7 @@
 {{define "LOOP"}}
 
-{{$blog := .blog}}
-{{range .posts}}
+{{$blog := .Blog}}
+{{range .Posts}}
 		<div id="post-{{.ID}}" class="post type-post status-publish format-standard hentry">
 			<h2 class="entry-title"><a href="{{$blog.siteurl}}/post?id={{.ID}}" title="Permalink to {{.Title}}" rel="bookmark">{{.Title}}</a></h2>
 
@@ -15,7 +15,7 @@
 
 			<div class="entry-utility">
 				<span class="cat-links">
-					<span class="entry-utility-prep entry-utility-prep-cat-links">Posted in</span>Category
+					<span class="entry-utility-prep entry-utility-prep-cat-links">Posted in</span> <a href="{{$blog.siteurl}}/post?category={{.Category}}" title="{{.Category}}">{{.Category}}</a>
 				</span>
 				<span class="meta-sep">|</span>
 				<span class="tag-links">

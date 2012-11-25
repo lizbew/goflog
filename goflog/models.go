@@ -7,8 +7,49 @@ import (
     "strconv"
 )
 
+const (
+  TaxonomyCategory string = "category"
+  TaxonomyLinkCategory string = "link_category"
+  TaxonomyPostTag string = "post_tag"
+)
+
 type Blog struct {
     Title string
+}
+
+type Term struct {
+  ID int64 `datastore:"-"`
+  Name string
+  Taxonomy string
+  Description string
+  Count int
+}
+
+func NewTerm(id int64, name,taxonomy string) *Term {
+  //term := make(Term)
+  /* var term Term
+  term.Name = name
+  term.Taxonomy = taxonomy
+  term.Count = 0 */
+  term := Term {
+   ID : id,
+   Name : name,
+   Taxonomy : taxonomy,
+   Count :0,
+  }
+  return &term
+}
+
+func (term *Term) IsOfCategory() bool {
+  return TaxonomyCategory == term.Taxonomy
+}
+
+func (term *Term) IsOfLinkCategory() bool {
+  return TaxonomyLinkCategory == term.Taxonomy
+}
+
+func (term *Term) IsOfPostTag() bool {
+  return TaxonomyPostTag == term.Taxonomy
 }
 
 type User struct {
@@ -32,10 +73,15 @@ type Post struct {
     ID     int64
     Title     string
     Content   string
+    Published bool
     Author    *datastore.Key
     Created   time.Time
     Modified  time.Time
     AuthorObj User `datastore:"-"`
+    Category  string
+    Tags      []string
+    //Categories []Term `datastore:"-"`
+    //Tags       []Term `datastore:"-"`
 }
 
 func (p *Post) HTMLContent() template.HTML {

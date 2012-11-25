@@ -22,7 +22,23 @@ tinyMCE.init({
         <textarea id="post_content" name="postContent"
 	style="width:80%">{{with .Post}}{{.Content}}{{end}}</textarea>
 	<br />
-	<input type="submit" name="save" value="Submit" />
+<span>Category</span>[{{with .Post}}{{.Category}}{{end}}]
+{{ $categoryList := .TermCategoryMap.category }}
+{{ $tagList := .TermCategoryMap.post_tag }}
+
+{{range $c := $categoryList}}
+<input name="postCategory" type="radio" value="{{$c.Name}}" />{{$c.Name}}
+{{end}}
+<br />
+<span>Tag</span>
+{{range $tag := $tagList}}
+<input name="postTag" type="checkbox" value="{{$tag.Name}}" />{{$tag.Name}}
+{{end}}
+
+<br/>
+<input type="checkbox" name="postPublished" value="published"{{with .Post}}{{if .Published}}checked="checked"{{end}}{{end}} /> Published
+<br/>
+<input name="submit" type="submit" value="Save" />
 </form>
   </body>
 </html>

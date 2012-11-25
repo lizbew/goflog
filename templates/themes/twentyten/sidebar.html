@@ -19,6 +19,15 @@
 				</ul>
 			</li>
 
+			<li id="categories" class="widget-container">
+				<h3 class="widget-title">Categories</h3>
+				<ul>
+					{{range .Categories}}
+					<li><a title="View all posts filed under {{.Name}}" href="/post?category={{.Name}}">{{.Name}}</a></li>
+					{{end}}
+				</ul>
+			</li>
+
 			<li id="meta" class="widget-container">
 				<h3 class="widget-title">Meta</h3>
 				<ul>

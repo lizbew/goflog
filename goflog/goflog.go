@@ -50,6 +50,7 @@ var (
        "templates/themes/twentyten/header.html",
         "templates/themes/twentyten/footer.html",
     ))
+    tmplTerm = template.Must(template.ParseFiles("templates/term.html"))
     blog = make(map[string]string)
 )
 
@@ -66,6 +67,12 @@ func init() {
     http.HandleFunc("/admin/post", handlePostList)
     http.HandleFunc("/admin/post/edit", postEdit)
     http.HandleFunc("/post", handleViewPost)
+
+    http.HandleFunc("/admin/term", handleTerm)
+    http.HandleFunc("/admin/term/edit", handleTermEdit)
+
+    http.HandleFunc("/welcome", welcome)
+    http.HandleFunc("/_ah/login_required", openIdHandler)
 }
 
 func serveError(c appengine.Context, w http.ResponseWriter, err error) {
@@ -86,7 +93,7 @@ func serveNotFound(w http.ResponseWriter, r *http.Request) {
 func handleHome(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)
 
-    posts, err := getLatestPosts(c, 10)
+    posts, err := GetLatestPosts(c, 10, true)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -104,12 +111,12 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
      }*/
 
     data := make(map[string]interface{})
-    data["posts"] = posts
+    data["Posts"] = posts
     data["Blog"] = blog
+    data["Categories"] = GetCategories(c)
     if err := templates.Execute(w, data); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }
-
 }
 
 func handleViewPost(w http.ResponseWriter, r *http.Request) {
@@ -119,6 +126,10 @@ func handleViewPost(w http.ResponseWriter, r *http.Request) {
     //var postKey *datastore.Key
 
     idStr := r.FormValue("id")
+    category := r.FormValue("category")
+    singlePost := true
+    var posts []Post
+
     if i,err := strconv.Atoi(idStr); err != nil {
               c.Infof("Failed to convert str to int64: ", i)            
           } else {
@@ -126,28 +137,35 @@ func handleViewPost(w http.ResponseWriter, r *http.Request) {
             //postKey = CreatePostKey(c, postID)
             post = GetPostByID(c, postID)
          }
-    posts := make([]Post, 1 ,1)
-    if post != nil {
-      posts[0] = *post
-      //append(posts, *post)
-   } else {
+    if post != nil && post.Published {
+      //posts[0] = *post
+      posts = append(posts, *post)
+   } else if category != ""{
+     posts = GetPostByCategory(c, category, true)
+     singlePost = false
+    } else {
     log.Print("Post not found for URL", r.URL.Path)
   serveNotFound(w, r)
 return
-    }
+}
 
   model := struct {
     Posts []Post
     Blog map[string]string
+    Categories []Term
   } {
-    posts,blog,
+    posts,blog, GetCategories(c),
   }
   
-    if err := tmplPost.Execute(w, model); err != nil {
+   tmpl := tmplPost
+  if (!singlePost) {
+   tmpl = templates
+   }
+
+    if err := tmpl.Execute(w, model); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }
 }
-
 
 func home(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)
