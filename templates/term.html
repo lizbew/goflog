@@ -17,17 +17,17 @@ border-bottom: 1px solid gray;
 <table id="post-table">
   <thead>
     <tr>
-      <th>ID</th><th>Name</th><th>Taxonomy</th><th>Description</th><th>Count</th>
+      <th>ID</th><th>Name</th><th>Taxonomy</th><th>Description</th><th>Slug</th><th>Count</th>
     </tr>
   </thead>
   <tbody>
 {{range .Terms}}
     <tr>
-      <td>{{.ID}}</td><td><a href="./term?id={{.ID}}" title="edit {{.Name}}">{{.Name}}</a></td><td>{{.Taxonomy}}</td><td>{{.Description}}</td><td>{{.Count}}</td>
+      <td>{{.ID}}</td><td><a href="./term?id={{.ID}}" title="edit {{.Name}}">{{.Name}}</a></td><td>{{.Taxonomy}}</td><td>{{.Description}}</td><td>{{.Slug}}</td><td>{{.Count}}</td>
     </tr>
 {{else}}
     <tr>
-      <td colspan="5">not found</td>
+      <td colspan="6">not found</td>
     </tr>
 {{end}}
   </tbody>
@@ -36,14 +36,15 @@ border-bottom: 1px solid gray;
 <div>
 <form name="editTermForm" method="post" action="./term/edit">
 <input name="termID" type="hidden" value="{{.CurrentTerm.ID}}" />
-<label for="term-name">Name</label><input id="term-name" name="termName" type="text" value="{{.CurrentTerm.Name}}"></input>
+<label for="term-name">Name</label><input id="term-name" name="termName" type="text" value="{{.CurrentTerm.Name}}"></input> <br />
 <label for="term-taxonomy">Taxonomy</label>
 <select id="term-taxonnmy" name="termTaxonomy" value="{{.CurrentTerm.Taxonomy}}">
 	<option value="category"{{if .CurrentTerm.IsOfCategory }} selected="selected"{{end}}>Category</option>
 <option value="link_category"{{if .CurrentTerm.IsOfLinkCategory }} selected="selected"{{end}}>Link Category</option>
 <option value="post_tag"{{if .CurrentTerm.IsOfPostTag }} selected="selected"{{end}}>Post Tag</option>
-</select>
-<label for="term-desc">Description</label><input id="term-desc" name="termDescription" type="text" value="{{.CurrentTerm.Description}}"></input>
+</select><br />
+<label for="term-desc">Description</label><input id="term-desc" name="termDescription" type="text" value="{{.CurrentTerm.Description}}"></input><br />
+<label for="term-slug">Slug</label><input id="term-slug" name="termSlug" type="text" value="{{.CurrentTerm.Slug}}"></input><br />
 <input type="submit" name="submit" value="Save" />
 </form>
 </div>

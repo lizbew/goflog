@@ -23,7 +23,7 @@ border-bottom: 1px solid gray;
   <tbody>
 {{range $i,$p := .Posts}}
     <tr>
-      <td>{{$i}}</td><td>{{ $p.Published }}</td><td><a href="./post/edit?id={{$p.ID}}" title="{{$p.Title}}">{{$p.Title}}</a></td><td>{{$p.Category}}</td><td>{{$p.Tags}}</td><td> {{if $p.Published }}<a href="/post?id={{$p.ID}}" title="View Post">View</a>{{end}}</td>
+      <td>{{$i}}</td><td>{{ $p.Published }}</td><td><a href="./post/edit?id={{$p.ID}}" title="{{$p.Title}}">{{$p.Title}}</a></td><td>{{with $p.CategoryTerm}}{{.Name}}{{end}}</td><td>{{$p.Tags}}</td><td> {{if $p.Published }}<a href="/post?id={{$p.ID}}" title="View Post">View</a>{{end}}</td>
     </tr>
 {{else}}
     <tr>

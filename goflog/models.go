@@ -22,15 +22,16 @@ type Term struct {
     Name        string
     Taxonomy    string
     Description string
+    Slug        string
     Count       int
 }
 
 func NewTerm(id int64, name, taxonomy string) *Term {
     //term := make(Term)
     /* var term Term
-    term.Name = name
-    term.Taxonomy = taxonomy
-    term.Count = 0 */
+       term.Name = name
+       term.Taxonomy = taxonomy
+       term.Count = 0 */
     term := Term{
         ID:       id,
         Name:     name,
@@ -70,16 +71,17 @@ type Comment struct {
 }
 
 type Post struct {
-    ID        int64
-    Title     string
-    Content   string
-    Published bool
-    Author    *datastore.Key
-    Created   time.Time
-    Modified  time.Time
-    AuthorObj User `datastore:"-"`
-    Category  string
-    Tags      []string
+    ID           int64
+    Title        string
+    Content      string
+    Published    bool
+    Author       *datastore.Key
+    Created      time.Time
+    Modified     time.Time
+    AuthorObj    User `datastore:"-"`
+    CategoryID   int64
+    CategoryTerm *Term `datastore:"-"`
+    Tags         []string
     //Categories []Term `datastore:"-"`
     //Tags       []Term `datastore:"-"`
 }

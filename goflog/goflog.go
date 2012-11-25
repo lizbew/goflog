@@ -34,7 +34,7 @@ var (
     ))
     tmplPostList = template.Must(template.ParseFiles("templates/post_list.html"))
     tmplPostEdit = template.Must(template.ParseFiles("templates/post_edit.html"))
-    tmplPost = template.Must(template.ParseFiles(
+    tmplPost     = template.Must(template.ParseFiles(
         "templates/themes/twentyten/single.html",
         "templates/themes/twentyten/header.html",
         "templates/themes/twentyten/footer.html",
@@ -124,7 +124,7 @@ func handleViewPost(w http.ResponseWriter, r *http.Request) {
     //var postKey *datastore.Key
 
     idStr := r.FormValue("id")
-    category := r.FormValue("category")
+    cateIDStr := r.FormValue("category")
     singlePost := true
     var posts []Post
 
@@ -138,8 +138,11 @@ func handleViewPost(w http.ResponseWriter, r *http.Request) {
     if post != nil && post.Published {
         //posts[0] = *post
         posts = append(posts, *post)
-    } else if category != "" {
-        posts = GetPostByCategory(c, category, true)
+    } else if cateIDStr != "" {
+        if cateID, err := strconv.Atoi(cateIDStr); err == nil {
+            posts = GetPostByCategory(c, int64(cateID), true)
+        }
+
         singlePost = false
     } else {
         log.Print("Post not found for URL", r.URL.Path)

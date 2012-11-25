@@ -42,32 +42,38 @@ func savePost(w http.ResponseWriter, r *http.Request) {
         post = GetPostByID(c, postID)
     }
 
-    category := r.FormValue("postCategory")
+    cateIDStr := r.FormValue("postCategory")
+    var categoryID int64 = 0
     //tags := r.FormValue("postTag")
     publishStr := r.FormValue("postPublished")
     published := false
     if publishStr == "published" {
         published = true
     }
+    if cateID, err := strconv.Atoi(cateIDStr); err == nil {
+        cateTerm := GetTermIDMap(c)[int64(cateID)]
+        if cateTerm != nil {
+            categoryID = int64(cateID)
+        }
+    }
     if post != nil {
         post.Title = r.FormValue("postTitle")
         post.Content = r.FormValue("postContent")
         post.Modified = time.Now()
-        post.Category = category
+        post.CategoryID = categoryID
         post.Published = published
     } else {
-
         postKey = NewPostKey(c)
         postID = postKey.IntID()
         post = &Post{
-            ID:        postID,
-            Title:     r.FormValue("postTitle"),
-            Content:   r.FormValue("postContent"),
-            Created:   time.Now(),
-            Modified:  time.Now(),
-            Author:    currentUserKey,
-            Category:  category,
-            Published: published,
+            ID:         postID,
+            Title:      r.FormValue("postTitle"),
+            Content:    r.FormValue("postContent"),
+            Created:    time.Now(),
+            Modified:   time.Now(),
+            Author:     currentUserKey,
+            CategoryID: categoryID,
+            Published:  published,
         }
     }
 
@@ -167,9 +173,9 @@ func handleTerm(w http.ResponseWriter, r *http.Request) {
         }
     }
     /*if err != nil {
-    http.Error(w, err.Error(), http.StatusInternalServerError)
-            return
-    }*/
+      http.Error(w, err.Error(), http.StatusInternalServerError)
+              return
+      }*/
 
     model := struct {
         Terms       []Term
@@ -199,6 +205,7 @@ func handleTermEdit(w http.ResponseWriter, r *http.Request) {
         Name:        r.FormValue("termName"),
         Taxonomy:    r.FormValue("termTaxonomy"),
         Description: r.FormValue("termDescription"),
+        Slug:        r.FormValue("termSlug"),
     }
     SaveTerm(c, &term)
     http.Redirect(w, r, "/admin/term", http.StatusFound)

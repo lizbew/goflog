@@ -25,6 +25,7 @@ var (
     mu              sync.Mutex
     termInited      bool = false
     termIDMap       map[int64]*Term
+    categorySlugMap map[string]*Term
     termCategoryMap map[string][]Term
 )
 
@@ -36,8 +37,14 @@ func InitTermMap(c appengine.Context) {
     if termCategoryMap == nil {
         termCategoryMap = make(map[string][]Term)
     }
+    if categorySlugMap == nil {
+        categorySlugMap = make(map[string]*Term)
+    }
     for _, t := range terms {
         termIDMap[t.ID] = &t
+        if t.Taxonomy == TaxonomyCategory && t.Slug != "" {
+            categorySlugMap[t.Slug] = &t
+        }
         if termCategoryMap[t.Taxonomy] == nil {
             var terms []Term
             terms = append(terms, t)
@@ -51,11 +58,25 @@ func InitTermMap(c appengine.Context) {
     termInited = true
 }
 
+func GetTermIDMap(c appengine.Context) map[int64]*Term {
+    if !termInited {
+        InitTermMap(c)
+    }
+    return termIDMap
+}
+
 func GetTermCategoryMap(c appengine.Context) map[string][]Term {
     if !termInited {
         InitTermMap(c)
     }
     return termCategoryMap
+}
+
+func GetCategorySlugMap(c appengine.Context) map[string]*Term {
+    if !termInited {
+        InitTermMap(c)
+    }
+    return categorySlugMap
 }
 
 func CreateTerm(c appengine.Context, name string, taxonomy string) *Term {
@@ -129,49 +150,14 @@ func GetLatestPosts(c appengine.Context, count int, published bool) ([]Post, err
     for i := range posts {
         posts[i].ID = ks[i].IntID()
 
-        if posts[i].Author != nil {
-            key := posts[i].Author.Encode()
-            //item0, err := memcache.Get(c, key)
-            /*if err != nil && err != memcache.ErrCacheMiss {
-                return err
-            }*/
-            au0 := new(User)
-            if _, err := MEMCACHE_CODEC.Get(c, key, au0); err == nil {
-                posts[i].AuthorObj = *au0
-            } else {
-                log.Print("Error when get from memcache, ", err)
-                //au := User{}
-                au := new(User)
-                if err := datastore.Get(c, posts[i].Author, au); err == nil {
-                    posts[i].AuthorObj = *au
-                    item1 := &memcache.Item{
-                        Key: key,
-                        //Value: []byte("bar"),
-                        Object:     *au,
-                        Expiration: 0,
-                    }
-
-                    //memcache.Set(c, item1)
-                    if err := MEMCACHE_CODEC.Add(c, item1); err != nil {
-                        log.Print("Error when add item to memcache ", err)
-                    }
-                    /*if err := memcache.Add(c, item1); err != nil {
-                       log.Print("Error when add item to memcache ", err)
-                    }*/
-                    //log.Print("Query datastore and put in memcache", key)
-                }
-            }
-
-            //au = &make(User)
-
-        }
+        FindPostRelated(c, &posts[i])
     }
     return posts, nil
 
 }
 
-func GetPostByCategory(c appengine.Context, category string, published bool) []Post {
-    q := datastore.NewQuery("Post").Filter("Category =", category).Order("-Created")
+func GetPostByCategory(c appengine.Context, categoryID int64, published bool) []Post {
+    q := datastore.NewQuery("Post").Filter("CategoryID =", categoryID).Order("-Created")
     if published {
         q = q.Filter("Published = ", true)
     }
@@ -183,10 +169,11 @@ func GetPostByCategory(c appengine.Context, category string, published bool) []P
             break
         }
         if err != nil {
-            c.Errorf("Failed when query Post by category, " + category)
+            c.Errorf("Failed when query Post by category, ")
             break
         }
         post.ID = key.IntID()
+        FindPostRelated(c, &post)
         posts = append(posts, post)
     }
     return posts
@@ -198,7 +185,47 @@ func GetPostByID(c appengine.Context, postID int64) *Post {
     if err := datastore.Get(c, postKey, post); err != nil {
         return nil
     }
+    FindPostRelated(c, post)
     return post
+}
+
+func FindPostRelated(c appengine.Context, post *Post) {
+    if post.Author != nil {
+        key := post.Author.Encode()
+        //item0, err := memcache.Get(c, key)
+        /*if err != nil && err != memcache.ErrCacheMiss {
+            return err
+        }*/
+        au0 := new(User)
+        if _, err := MEMCACHE_CODEC.Get(c, key, au0); err == nil {
+            post.AuthorObj = *au0
+        } else {
+            log.Print("Error when get from memcache, ", err)
+            //au := User{}
+            au := new(User)
+            if err := datastore.Get(c, post.Author, au); err == nil {
+                post.AuthorObj = *au
+                item1 := &memcache.Item{
+                    Key: key,
+                    //Value: []byte("bar"),
+                    Object:     *au,
+                    Expiration: 0,
+                }
+
+                //memcache.Set(c, item1)
+                if err := MEMCACHE_CODEC.Add(c, item1); err != nil {
+                    log.Print("Error when add item to memcache ", err)
+                }
+                /*if err := memcache.Add(c, item1); err != nil {
+                   log.Print("Error when add item to memcache ", err)
+                }*/
+                //log.Print("Query datastore and put in memcache", key)
+            }
+        }
+    }
+    if post.CategoryID > 0 {
+        post.CategoryTerm = GetTermIDMap(c)[post.CategoryID]
+    }
 }
 
 func GetAllTerms(c appengine.Context) []Term {

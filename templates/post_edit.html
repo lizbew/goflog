@@ -22,12 +22,12 @@ tinyMCE.init({
         <textarea id="post_content" name="postContent"
 	style="width:80%">{{with .Post}}{{.Content}}{{end}}</textarea>
 	<br />
-<span>Category</span>[{{with .Post}}{{.Category}}{{end}}]
+<span>Category</span>[{{with .Post}}{{.CategoryTerm.Name}}{{end}}]
 {{ $categoryList := .TermCategoryMap.category }}
 {{ $tagList := .TermCategoryMap.post_tag }}
 
 {{range $c := $categoryList}}
-<input name="postCategory" type="radio" value="{{$c.Name}}" />{{$c.Name}}
+<input name="postCategory" type="radio" value="{{$c.ID}}" />{{$c.Name}}
 {{end}}
 <br />
 <span>Tag</span>

@@ -14,9 +14,11 @@
 			</div><!-- .entry-content -->
 
 			<div class="entry-utility">
+				{{with .CategoryTerm}}
 				<span class="cat-links">
-					<span class="entry-utility-prep entry-utility-prep-cat-links">Posted in</span> <a href="{{$blog.siteurl}}/post?category={{.Category}}" title="{{.Category}}">{{.Category}}</a>
+					<span class="entry-utility-prep entry-utility-prep-cat-links">Posted in</span> <a href="{{$blog.siteurl}}/post?category={{.ID}}" title="{{.Name}}">{{.Name}}</a>
 				</span>
+				{{end}}
 				<span class="meta-sep">|</span>
 				<span class="tag-links">
 					<span class="entry-utility-prep entry-utility-prep-tag-links">Tagged</span> tag

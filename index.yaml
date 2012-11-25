@@ -19,6 +19,13 @@ indexes:
 
 - kind: Post
   properties:
+  - name: CategoryID
+  - name: Published
+  - name: Created
+    direction: desc
+
+- kind: Post
+  properties:
   - name: Published
   - name: Created
     direction: desc
