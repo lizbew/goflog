@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<post>
+{{range $i,$p := .Posts}}
+<item>
+	<id>{{ $p.ID}}</id>
+	<title>{{ $p.Title }}</title>
+	<author>{{ $p.Author }}</author>
+	<content><![CDATA[{{ $p.HTMLContent }}]]></content>
+	<created>{{ $p.Created }}</created>
+	<modified>{{ $p.Modified }}</modified>
+	<published>{{ $p.Published }}</published>
+</item>
+{{end}}
+</post>

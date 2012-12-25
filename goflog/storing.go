@@ -23,7 +23,7 @@ var (
     PostIDNext      int64 = 0
     MEMCACHE_CODEC        = memcache.Gob
     mu              sync.Mutex
-    termInitMutex              sync.Mutex
+    termInitMutex   sync.Mutex
     termInited      bool = false
     termIDMap       map[int64]*Term
     categorySlugMap map[string]*Term
@@ -33,8 +33,8 @@ var (
 func InitTermMap(c appengine.Context) {
     termInitMutex.Lock()
     defer termInitMutex.Unlock()
-    if (termInited) {
-	return
+    if termInited {
+        return
     }
     terms := GetAllTerms(c)
     if termIDMap == nil {

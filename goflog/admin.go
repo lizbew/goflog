@@ -7,8 +7,8 @@ import (
     "log"
     "net/http"
     "strconv"
-    "time"
     "text/template"
+    "time"
 )
 
 func GetCurrentUserKey(c appengine.Context) *datastore.Key {
@@ -213,17 +213,17 @@ func handleTermEdit(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleExport(w http.ResponseWriter, r *http.Request) {
-  c := appengine.NewContext(r)
- posts, err := GetLatestPosts(c, 0, false)
+    c := appengine.NewContext(r)
+    posts, err := GetLatestPosts(c, 0, false)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
- model := struct {
+    model := struct {
         Posts []Post
     }{
-        Posts : posts,
+        Posts: posts,
     }
     exportTmpl := template.Must(template.ParseFiles("templates/post_export.xml"))
     exportTmpl.Execute(w, model)

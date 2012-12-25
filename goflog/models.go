@@ -91,6 +91,10 @@ func (p *Post) HTMLContent() template.HTML {
     return template.HTML(p.Content)
 }
 
+func (p *Post) StringContent() string {
+    return string(p.Content)
+}
+
 func (p *Post) DispCreatedTime() string {
     return p.Created.Format("Jan 02, 2006Z08:00")[0:12]
 }
