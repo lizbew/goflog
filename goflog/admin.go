@@ -8,6 +8,7 @@ import (
     "net/http"
     "strconv"
     "time"
+    "text/template"
 )
 
 func GetCurrentUserKey(c appengine.Context) *datastore.Key {
@@ -58,7 +59,7 @@ func savePost(w http.ResponseWriter, r *http.Request) {
     }
     if post != nil {
         post.Title = r.FormValue("postTitle")
-        post.Content = r.FormValue("postContent")
+        post.Content = []byte(r.FormValue("postContent"))
         post.Modified = time.Now()
         post.CategoryID = categoryID
         post.Published = published
@@ -68,7 +69,7 @@ func savePost(w http.ResponseWriter, r *http.Request) {
         post = &Post{
             ID:         postID,
             Title:      r.FormValue("postTitle"),
-            Content:    r.FormValue("postContent"),
+            Content:    []byte(r.FormValue("postContent")),
             Created:    time.Now(),
             Modified:   time.Now(),
             Author:     currentUserKey,
@@ -209,4 +210,21 @@ func handleTermEdit(w http.ResponseWriter, r *http.Request) {
     }
     SaveTerm(c, &term)
     http.Redirect(w, r, "/admin/term", http.StatusFound)
+}
+
+func handleExport(w http.ResponseWriter, r *http.Request) {
+  c := appengine.NewContext(r)
+ posts, err := GetLatestPosts(c, 0, false)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+ model := struct {
+        Posts []Post
+    }{
+        Posts : posts,
+    }
+    exportTmpl := template.Must(template.ParseFiles("templates/post_export.xml"))
+    exportTmpl.Execute(w, model)
 }

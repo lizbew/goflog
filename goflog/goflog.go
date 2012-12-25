@@ -68,7 +68,8 @@ func init() {
 
     http.HandleFunc("/admin/term", handleTerm)
     http.HandleFunc("/admin/term/edit", handleTermEdit)
-
+    http.HandleFunc("/admin/export", handleExport)
+    http.HandleFunc("/admin/maintain", handleMaintain)
     http.HandleFunc("/welcome", welcome)
     http.HandleFunc("/_ah/login_required", openIdHandler)
 }

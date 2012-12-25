@@ -73,7 +73,7 @@ type Comment struct {
 type Post struct {
     ID           int64
     Title        string
-    Content      string
+    Content      []byte
     Published    bool
     Author       *datastore.Key
     Created      time.Time
@@ -82,6 +82,7 @@ type Post struct {
     CategoryID   int64
     CategoryTerm *Term `datastore:"-"`
     Tags         []string
+    Category     string
     //Categories []Term `datastore:"-"`
     //Tags       []Term `datastore:"-"`
 }

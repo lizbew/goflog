@@ -22,7 +22,7 @@ tinyMCE.init({
         <textarea id="post_content" name="postContent"
 	style="width:80%">{{with .Post}}{{.Content}}{{end}}</textarea>
 	<br />
-<span>Category</span>[{{with .Post}}{{.CategoryTerm.Name}}{{end}}]
+<span>Category</span>[{{with .Post}}{{with .CategoryTerm}}{{.Name}}{{end}}{{end}}]
 {{ $categoryList := .TermCategoryMap.category }}
 {{ $tagList := .TermCategoryMap.post_tag }}
 
