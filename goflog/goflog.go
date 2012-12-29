@@ -40,8 +40,9 @@ var (
         "templates/themes/twentyten/footer.html",
         "templates/themes/twentyten/loop-single.html",
         "templates/themes/twentyten/sidebar.html",
-        "templates/themes/twentyten/comments.html",
-        "templates/themes/twentyten/comment-form.html",
+        "templates/themes/twentyten/disqus-comment.html",
+        //"templates/themes/twentyten/comments.html",
+        //"templates/themes/twentyten/comment-form.html",
     ))
     tmpl404 = template.Must(template.ParseFiles(
         "templates/themes/twentyten/404.html",

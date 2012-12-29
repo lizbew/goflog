@@ -4,7 +4,9 @@ import (
     "appengine/datastore"
     "html/template"
     "strconv"
+    "strings"
     "time"
+    "regexp"
 )
 
 const (
@@ -93,6 +95,15 @@ func (p *Post) HTMLContent() template.HTML {
 
 func (p *Post) StringContent() string {
     return string(p.Content)
+}
+
+func (p *Post) NormalizeTitle() string {
+  //reg,_ := regexp.Compile("xxx[\x00-\x7F]+xxx")
+  // regx,_ := regexp.CompilePOSIX("[[:ascii:]]")
+  ti := strings.Replace(p.Title, "'", "", -1)  
+  ti = strings.Replace(ti, "\"", "", -1)
+ regx,_ := regexp.Compile("[^\x00-\x7F]")
+ return regx.ReplaceAllString(ti, "")
 }
 
 func (p *Post) DispCreatedTime() string {
