@@ -3,12 +3,16 @@ package goflog
 import (
     "appengine"
     "appengine/datastore"
+    "appengine/urlfetch"
     "appengine/user"
     "fmt"
     "html/template"
     "io"
+    "io/ioutil"
     "log"
+    "net"
     "net/http"
+    "net/url"
     "strconv"
     "time"
 )
@@ -73,6 +77,9 @@ func init() {
     http.HandleFunc("/admin/maintain", handleMaintain)
     http.HandleFunc("/welcome", welcome)
     http.HandleFunc("/_ah/login_required", openIdHandler)
+
+    http.HandleFunc("/blog/", handleProxy)
+
 }
 
 func serveError(c appengine.Context, w http.ResponseWriter, err error) {
@@ -89,6 +96,57 @@ func serveNotFound(w http.ResponseWriter, r *http.Request) {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }
 }
+
+// proxy of viiflog
+func handleProxy(w http.ResponseWriter, r *http.Request) {
+  c := appengine.NewContext(r)
+  client := urlfetch.Client(c)
+
+  target_url := "http://localhost:8080"
+  if true {
+    target_url = "http://viiflog.appspot.com"
+  }
+  targetURL,err := url.Parse(target_url)
+
+  outreq := new(http.Request)
+  *outreq = *r
+  outreq.URL.Scheme = targetURL.Scheme
+  outreq.URL.Host = targetURL.Host
+  //outreq.URL.Path = r.URL.Path
+  //outreq.URL.RawQuery = r.URL.RawQuery
+  
+  // Request.RequestURI can't be set in client requests.
+  outreq.RequestURI = ""
+
+  if clientIp, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
+     outreq.Header.Set("X-Forwarded-For", clientIp)
+  }
+  outreq.Header.Set("X-Viifly", "http://blog.viifly.com")
+
+  //resp, err := http.DefaultClient.Do(outreq)
+  resp, err := client.Do(outreq)
+  if err != nil {
+    //panic(err)
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+  }
+
+  if resp.Header != nil {
+    for k, v := range resp.Header {
+      for _, vv := range v {
+        w.Header().Add(k, vv)
+      }
+    }
+  }
+
+  w.WriteHeader(resp.StatusCode)
+  defer resp.Body.Close()
+  result, err := ioutil.ReadAll(resp.Body)
+  if err != nil && err != io.EOF {
+    panic(err)
+  }
+  w.Write(result)
+}
+
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)
