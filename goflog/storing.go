@@ -3,6 +3,7 @@ package goflog
 import (
     "appengine"
     "appengine/datastore"
+    "appengine/blobstore"
     "appengine/memcache"
     //"net/http"
     "log"
@@ -283,7 +284,46 @@ func SaveTerm(c appengine.Context, term *Term) error {
     }
     termInited = false
     if _, err := datastore.Put(c, k, term); err != nil {
-        return nil
+        return err
     }
     return nil
+}
+
+func SaveFileBlobKey(c appengine.Context, blobInfo *blobstore.BlobInfo) error {
+    upfile := ServFile {
+        Filename: blobInfo.Filename,
+        ContentType: blobInfo.ContentType,
+        FileBlob: blobInfo.BlobKey,
+    }
+    if _, err := datastore.Put(c, datastore.NewIncompleteKey(c, "ServFile", nil), &upfile); err != nil {
+        c.Errorf("Error when save BlobKey to datastore: %v", err)
+        return err
+    }
+    return nil
+}
+
+func GetFileList(c appengine.Context) []ServFile {
+    q := datastore.NewQuery("ServFile")
+    var allFiles []ServFile
+    for it := q.Run(c);; {
+        var f ServFile
+        k, err := it.Next(&f)
+        if err == datastore.Done {
+            break
+        }
+        f.ID = k.IntID()
+        allFiles = append(allFiles, f)
+    }
+    return allFiles
+}
+
+func GetFileByID(c appengine.Context, fileID int64) *ServFile {
+    k := datastore.NewKey(c, "ServFile", "", fileID, nil)    
+    var f ServFile
+    if err := datastore.Get(c, k, &f); err != nil {
+        c.Warningf("Error when get ServFile: %v", err)
+        return nil
+    }
+    f.ID = fileID
+    return &f
 }

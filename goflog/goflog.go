@@ -14,7 +14,11 @@ import (
     "net/http"
     "net/url"
     "strconv"
+    //"path/filepath"
     "time"
+    _ "errors"
+    //"os"
+    "strings"
 )
 
 type Greeting struct {
@@ -23,6 +27,11 @@ type Greeting struct {
     Date    time.Time
 }
 
+const (
+    TEMPLATE_DIR string = "templates"
+    TEMPLATE_THEME_DIR string = "templates/themes/twentyten"
+    TEMPLATE_EXT string = ".html"
+)
 var (
     /* templates = template.Must(template.ParseFiles(
         "templates/home.html",
@@ -57,16 +66,39 @@ var (
     blog     = make(map[string]string)
 )
 
+//func initTemplate() {
+    /*fi, err := os.Stat(TEMPLATE_DIR)
+    if err != nil || !fi.IsDir(){
+        log.Printf("Directory %v not exists: %v", TEMPLATE_DIR, err)
+        return
+    }*/
+/*    fis, err := ioutil.ReadDir(TEMPLATE_DIR)
+    if err != nil {
+        log.Printf("Directory %v not exists: %v", TEMPLATE_DIR, err)
+        return 
+    }
+    var tmplFiles []string
+    for _, fi := range fis {
+        if fi.IsDir() || !strings.HasSuffix(fi.Name(), TEMPLATE_EXT) {
+            continue
+        }
+        tmplFiles = append(tmplFiles, filepath.Join(TEMPLATE_DIR, fi.Name()))
+    }
+    templates = template.Must(template.ParseFiles(&tmplFiles))
+}*/
+
 func init() {
     blog["charset"] = "UTF-8"
     blog["name"] = "Vika's Blog"
     blog["description"] = "a longer way"
     blog["siteurl"] = ""
 
+    //initTemplate()
+
     http.HandleFunc("/", handleHome)
     http.HandleFunc("/guest", guestHandler)
     http.HandleFunc("/sign", sign)
-    http.HandleFunc("/admin", admin)
+    http.HandleFunc("/admin/", admin)
     http.HandleFunc("/admin/post", handlePostList)
     http.HandleFunc("/admin/post/edit", postEdit)
     http.HandleFunc("/post", handleViewPost)
@@ -92,9 +124,9 @@ func serveError(c appengine.Context, w http.ResponseWriter, err error) {
 func serveNotFound(w http.ResponseWriter, r *http.Request) {
     data := make(map[string]interface{})
     data["Blog"] = blog
-    if err := tmpl404.Execute(w, data); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
+    w.WriteHeader(http.StatusNotFound)
+    w.Header().Set("Content-Type", "text/html; charset=utf-8")
+    tmpl404.Execute(w, data)
 }
 
 // proxy of viiflog
@@ -128,6 +160,7 @@ func handleProxy(w http.ResponseWriter, r *http.Request) {
   if err != nil {
     //panic(err)
     http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
   }
 
   if resp.Header != nil {
@@ -150,6 +183,36 @@ func handleProxy(w http.ResponseWriter, r *http.Request) {
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)
+
+    //handle for path all
+    if r.URL.Path != "/" {
+        if ref := r.Header.Get("Referer"); ref != "" {
+            c.Debugf("Referer: %v", ref)
+            if refURL,err := url.Parse(ref); err == nil {
+                if strings.Index(refURL.Path, "/webproxy/") >= 0 {
+                    q := refURL.Query()
+                    prxyForUrlString := q.Get("url")
+                    prxyForURL, err :=  url.Parse(prxyForUrlString)
+                    if err == nil {
+                        prxyForURL.Path =  r.URL.Path
+                        prxyForURL.RawQuery =  r.URL.RawQuery
+                        prxyForURL.Fragment = r.URL.Fragment
+                        q.Set("url", prxyForURL.String())
+                        refURL.RawQuery = q.Encode()
+                        r.URL = refURL
+                        r.Header.Set("Referer", prxyForUrlString)
+                        //http.Redirect(w, r, refURL.String(), http.StatusFound)
+                        handleWebProxy(w, r)
+                        return
+                    }
+                }        
+            }
+            
+        }
+        
+        serveNotFound(w, r)
+        return
+    }
 
     posts, err := GetLatestPosts(c, 10, true)
     if err != nil {
