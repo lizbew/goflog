@@ -1,0 +1,18 @@
+<html>
+<head>
+	<title>Admin Page</title>
+</head>
+<body>
+	<div><a href="/admin/page/">Page List</a></div>
+	<div>
+		<form name="page-form" method="POST" action="/admin/page/edit{{if .pageID}}?page-id={{.pageID}}{{end}}">
+		<!-- input id="page-id" type="hidden" name="page-id" value="{{.pageID}}" -->
+		<div><label for="page-title">Title:</label>
+		<input id="page-title" type="text" name="page-title" value="{{.pageTitle}}"></div>
+		<div><label for="page-content">Page Content</label></div>
+		<div><textarea id="page-content" name="page-content" cols="80" rows="20">{{.pageContent}}</textarea></div>
+		<input type="submit" name="submit" value="Save">
+		</form>
+	</div>
+</body>
+</html>
