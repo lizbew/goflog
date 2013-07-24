@@ -7,6 +7,7 @@ import (
     "strings"
     "time"
     "regexp"
+    "appengine"
 )
 
 const (
@@ -140,4 +141,11 @@ return nil;
 type Option struct {
     Name  string
     Value string
+}
+
+type ServFile struct {
+    ID int64 `datastore:"-"`
+    Filename string
+    ContentType string
+    FileBlob appengine.BlobKey
 }

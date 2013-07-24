@@ -15,6 +15,18 @@ handlers:
   script: _go_app
   login: admin
 
+- url: /admin/.*
+  script: _go_app
+  login: admin
+
+- url: /blog/admin
+  script: _go_app
+  login: admin
+
+- url: /blog/admin/.*
+  script: _go_app
+  login: admin
+
 - url: /.*
   script: _go_app
 

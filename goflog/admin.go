@@ -144,12 +144,15 @@ func handlePostList(w http.ResponseWriter, r *http.Request) {
         return
     }
 
+    logout_url, _  :=user.LogoutURL(c, "/")
     model := struct {
         Posts           []Post
         TermCategoryMap map[string][]Term
+        LogoutUrl       string
     }{
         Posts:           posts,
         TermCategoryMap: GetTermCategoryMap(c),
+        LogoutUrl:       logout_url,
     }
     tmplPostList.Execute(w, model)
 }

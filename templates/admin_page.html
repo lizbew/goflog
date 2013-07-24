@@ -1,0 +1,35 @@
+<html>
+<head>
+	<title>Admin Page</title>
+</head>
+<body>
+	<div>
+		<h2>Page List</h2>
+		{{if .page_list}}
+		<table>
+			<thead>
+				<tr>
+				<th>#</th>
+				<th>title</th>
+				<th>attachments</th>
+				<th>x</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{range $i, $p := .page_list}}
+				<tr>
+					<td>{{$i}}</td>
+					<td><a href="/page/{{$p.ID}}" title="view page">{{$p.Title}}</a></td>
+					<td></td>
+					<td><a href="/admin/page/edit?page-id={{$p.ID}}">Edit</a></td>
+				</tr>
+				{{end}}
+			</tbody>
+		</table>
+		{{else}}
+		<div>No Page Found</div>
+		{{end}}
+		<div><a href="/admin/page/edit">New Page</a></div>
+	</div>
+</body>
+</html>
