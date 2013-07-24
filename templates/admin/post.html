@@ -1,19 +1,6 @@
-<html>
-<head>
-<title>Post List</title>
-<style type="text/css">
-#post-table{
-border-top: 1px solid gray;
-border-left: 1px solid gray;
-}
-#post-table td, #post-table th{
-border-right: 1px solid gray;
-border-bottom: 1px solid gray;
-}
-</style>
-<script src="http://yui.yahooapis.com/3.7.3/build/yui/yui-min.js"></script>
-</head>
-  <body>
+{{define "title"}}Post List{{end}}
+
+{{define "body"}}
 <table id="post-table">
   <thead>
     <tr>
@@ -33,5 +20,19 @@ border-bottom: 1px solid gray;
   </tbody>
 </table>
   <a href="{{ .LogoutUrl }}">Logout</a>
-  </body>
-</html>
+{{end}}
+
+{{define "extrahead"}}
+<style type="text/css">
+#post-table{
+border-top: 1px solid gray;
+border-left: 1px solid gray;
+}
+#post-table td, #post-table th{
+border-right: 1px solid gray;
+border-bottom: 1px solid gray;
+}
+</style>
+{{end}}
+
+{{define "extrabody"}}{{end}}

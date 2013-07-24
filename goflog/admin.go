@@ -90,8 +90,9 @@ func admin(w http.ResponseWriter, r *http.Request) {
     /*if err := templates.ExecuteTemplate(w, "admin.html", nil); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
     }*/
-    log.Print("Server admin from file")
-    http.ServeFile(w, r, "templates/admin.html")
+    //log.Print("Server admin from file")
+    //http.ServeFile(w, r, "templates/admin.html")
+	executeTemplate(w, "admin", http.StatusOK, nil)
 }
 
 func postEdit(w http.ResponseWriter, r *http.Request) {
@@ -122,13 +123,12 @@ func postEdit(w http.ResponseWriter, r *http.Request) {
 
         }
 
-        model := struct {
-            ModifyPost      bool
-            Post            *Post
-            PostID          int64
-            TermCategoryMap map[string][]Term
-        }{Post: post, PostID: postID, ModifyPost: modifyPost, TermCategoryMap: GetTermCategoryMap(c)}
-        tmplPostEdit.Execute(w, model)
+        executeTemplate(w, "adminPostEdit", http.StatusOK, map[string]interface{}{
+			"ModifyPost": modifyPost,
+			"Post": post,
+			"PostID": postID,
+			"TermCategoryMap": GetTermCategoryMap(c),
+		})
         return
     }
     //POST
@@ -145,7 +145,7 @@ func handlePostList(w http.ResponseWriter, r *http.Request) {
     }
 
     logout_url, _  :=user.LogoutURL(c, "/")
-    model := struct {
+    /*model := struct {
         Posts           []Post
         TermCategoryMap map[string][]Term
         LogoutUrl       string
@@ -154,7 +154,12 @@ func handlePostList(w http.ResponseWriter, r *http.Request) {
         TermCategoryMap: GetTermCategoryMap(c),
         LogoutUrl:       logout_url,
     }
-    tmplPostList.Execute(w, model)
+    tmplPostList.Execute(w, model)*/
+	executeTemplate(w, "adminPost", http.StatusOK, map[string]interface{}{
+        "Posts":           posts,
+        "TermCategoryMap": GetTermCategoryMap(c),
+        "LogoutUrl":       logout_url,
+	})
 }
 
 func handleTerm(w http.ResponseWriter, r *http.Request) {
@@ -181,14 +186,18 @@ func handleTerm(w http.ResponseWriter, r *http.Request) {
               return
       }*/
 
-    model := struct {
+    /*model := struct {
         Terms       []Term
         CurrentTerm *Term
     }{
         Terms:       terms,
         CurrentTerm: &currentTerm,
     }
-    tmplTerm.Execute(w, model)
+    tmplTerm.Execute(w, model)*/
+	executeTemplate(w, "adminTerm", http.StatusOK, map[string]interface{}{
+        "Terms":       terms,
+        "CurrentTerm": &currentTerm,
+	})
 }
 
 func handleTermEdit(w http.ResponseWriter, r *http.Request) {
@@ -228,6 +237,6 @@ func handleExport(w http.ResponseWriter, r *http.Request) {
     }{
         Posts: posts,
     }
-    exportTmpl := template.Must(template.ParseFiles("templates/post_export.xml"))
+    exportTmpl := template.Must(template.ParseFiles("templates/admin/post_export.xml"))
     exportTmpl.Execute(w, model)
 }

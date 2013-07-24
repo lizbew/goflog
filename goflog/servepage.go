@@ -5,7 +5,6 @@ import (
     "appengine/datastore"
     "time"
     "net/http"
-    "html/template"
     "strconv"
     "errors"
     "path"
@@ -77,14 +76,13 @@ func GetPageList(c appengine.Context) []Page {
     return pageList
 }
 
-var adminPageTemplate = template.Must(template.ParseFiles("templates/admin_page.html"))
-var adminEditPageTemplate = template.Must(template.ParseFiles("templates/admin_page_edit.html"))
 
 func handleAdminPage(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)
     renderContext := make(map[string]interface{})
     renderContext["page_list"] = GetPageList(c)
-    err := adminPageTemplate.Execute(w, renderContext)
+	err := executeTemplate(w, "adminPage", http.StatusOK, renderContext)
+	
     if err != nil {
         c.Errorf("%v", err)
     }
@@ -117,7 +115,7 @@ func handleAdminEditPage(w http.ResponseWriter, r *http.Request) {
     renderContext["pageTitle"] = page.Title
     renderContext["pageContent"] = string(page.Content)
 
-    err := adminEditPageTemplate.Execute(w, renderContext)
+	err := executeTemplate(w, "adminPageEdit", http.StatusOK, renderContext)
     if err != nil {
         c.Errorf("%v", err)
     }

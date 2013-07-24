@@ -1,8 +1,6 @@
-<html>
-<head>
-	<title>Admin File</title>
-</head>
-<body>
+{{define "title"}}Manage File - Admin{{end}}
+
+{{define "body"}}
 	<div>
 		<h2>File List</h2>
 		{{if .file_list}}
@@ -37,5 +35,8 @@
 			<input type="submit" name="submit" value="Submit">
 		</form>
 	</div>
-</body>
-</html>
+{{end}}
+
+{{define "extrahead"}}{{end}}
+
+{{define "extrabody"}}{{end}}

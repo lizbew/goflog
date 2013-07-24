@@ -45,8 +45,8 @@ var (
         "templates/themes/twentyten/loop.html",
         "templates/themes/twentyten/sidebar.html",
     ))
-    tmplPostList = template.Must(template.ParseFiles("templates/post_list.html"))
-    tmplPostEdit = template.Must(template.ParseFiles("templates/post_edit.html"))
+    //tmplPostList = template.Must(template.ParseFiles("templates/post_list.html"))
+
     tmplPost     = template.Must(template.ParseFiles(
         "templates/themes/twentyten/single.html",
         "templates/themes/twentyten/header.html",
@@ -62,7 +62,7 @@ var (
         "templates/themes/twentyten/header.html",
         "templates/themes/twentyten/footer.html",
     ))
-    tmplTerm = template.Must(template.ParseFiles("templates/term.html"))
+    //tmplTerm = template.Must(template.ParseFiles("templates/term.html"))
     blog     = make(map[string]string)
 )
 
@@ -96,22 +96,23 @@ func init() {
     //initTemplate()
 
     http.HandleFunc("/", handleHome)
-    http.HandleFunc("/guest", guestHandler)
-    http.HandleFunc("/sign", sign)
+    http.HandleFunc("/post", handleViewPost)
+
     http.HandleFunc("/admin/", admin)
     http.HandleFunc("/admin/post", handlePostList)
     http.HandleFunc("/admin/post/edit", postEdit)
-    http.HandleFunc("/post", handleViewPost)
-
     http.HandleFunc("/admin/term", handleTerm)
     http.HandleFunc("/admin/term/edit", handleTermEdit)
     http.HandleFunc("/admin/export", handleExport)
     http.HandleFunc("/admin/maintain", handleMaintain)
-    http.HandleFunc("/welcome", welcome)
-    http.HandleFunc("/_ah/login_required", openIdHandler)
+
 
     http.HandleFunc("/blog/", handleProxy)
 
+    //http.HandleFunc("/welcome", welcome)
+    //http.HandleFunc("/guest", guestHandler)
+    //http.HandleFunc("/sign", sign)
+    //http.HandleFunc("/_ah/login_required", openIdHandler)
 }
 
 func serveError(c appengine.Context, w http.ResponseWriter, err error) {

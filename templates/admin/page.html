@@ -1,8 +1,6 @@
-<html>
-<head>
-	<title>Admin Page</title>
-</head>
-<body>
+{{define "title"}}Manage Page - Admin{{end}}
+
+{{define "body"}}
 	<div>
 		<h2>Page List</h2>
 		{{if .page_list}}
@@ -31,5 +29,8 @@
 		{{end}}
 		<div><a href="/admin/page/edit">New Page</a></div>
 	</div>
-</body>
-</html>
+{{end}}
+
+{{define "extrahead"}}{{end}}
+
+{{define "extrabody"}}{{end}}

@@ -3,7 +3,6 @@ package goflog
 import (
     "appengine"
     "appengine/blobstore"
-    "html/template"
     _ "io"
     "net/http"
     _ "path"
@@ -11,7 +10,6 @@ import (
     "strconv"
 )
 
-var fileListTemplate = template.Must(template.ParseFiles("templates/admin_file.html"))
 
 func handleAdminFileList(w http.ResponseWriter, r *http.Request) {
     c := appengine.NewContext(r)
@@ -24,7 +22,7 @@ func handleAdminFileList(w http.ResponseWriter, r *http.Request) {
     renderContext := make(map[string]interface{})
     renderContext["file_list"] = GetFileList(c)
     renderContext["upload_url"] = uploadURL
-    err = fileListTemplate.Execute(w, renderContext)
+    err = executeTemplate(w, "adminFile", http.StatusOK, renderContext)
     if err != nil {
         c.Errorf("%v", err)
     }
