@@ -4,12 +4,16 @@
 	<div><a href="/admin/page/">Page List</a></div>
 	<div>
 		<form name="page-form" method="POST" action="/admin/page/edit{{if .pageID}}?page-id={{.pageID}}{{end}}">
-		<!-- input id="page-id" type="hidden" name="page-id" value="{{.pageID}}" -->
-		<div><label for="page-title">Title:</label>
-		<input id="page-title" type="text" name="page-title" value="{{.pageTitle}}"></div>
-		<div><label for="page-content">Page Content</label></div>
-		<div><textarea id="page-content" name="page-content" cols="80" rows="20">{{.pageContent}}</textarea></div>
-		<input type="submit" name="submit" value="Save">
+		<fieldset>
+			<legend>Edit Page</legend>
+			<label for="page-title" placeholder="Page Title...">Title:</label>
+			<input id="page-title" type="text" name="page-title" value="{{.pageTitle}}">
+			<label for="page-content">Page Content</label>
+			<textarea id="page-content" name="page-content" rows="10" class="input-block-level">{{.pageContent}}</textarea>
+			<div class="form-actions">
+				<button type="submit" name="submit" class="btn btn-primary">Save</button>
+			</div>
+		</fieldset>
 		</form>
 	</div>
 {{end}}

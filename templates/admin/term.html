@@ -1,7 +1,7 @@
 {{define "title"}}Term List{{end}}
 
 {{define "body"}}
-<table id="post-table">
+<table id="post-table" class="table table-bordered table-hover">
   <thead>
     <tr>
       <th>ID</th><th>Name</th><th>Taxonomy</th><th>Description</th><th>Slug</th><th>Count</th>
@@ -39,17 +39,6 @@
 </html>
 {{end}}
 
-{{define "extrahead"}}
-<style type="text/css">
-#post-table{
-border-top: 1px solid gray;
-border-left: 1px solid gray;
-}
-#post-table td, #post-table th{
-border-right: 1px solid gray;
-border-bottom: 1px solid gray;
-}
-</style>
-{{end}}
+{{define "extrahead"}}{{end}}
 
 {{define "extrabody"}}{{end}}

@@ -1,7 +1,7 @@
 {{define "title"}}Post List{{end}}
 
 {{define "body"}}
-<table id="post-table">
+<table id="post-table" class="table table-bordered table-hover">
   <thead>
     <tr>
       <th>ID</th><th>Published</th><th>Title</th><th>Category</th><th>Tag</th><th>View</th>
@@ -22,17 +22,6 @@
   <a href="{{ .LogoutUrl }}">Logout</a>
 {{end}}
 
-{{define "extrahead"}}
-<style type="text/css">
-#post-table{
-border-top: 1px solid gray;
-border-left: 1px solid gray;
-}
-#post-table td, #post-table th{
-border-right: 1px solid gray;
-border-bottom: 1px solid gray;
-}
-</style>
-{{end}}
+{{define "extrahead"}}{{end}}
 
 {{define "extrabody"}}{{end}}

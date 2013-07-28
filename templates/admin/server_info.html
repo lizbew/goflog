@@ -1,0 +1,18 @@
+{{define "title"}}Server Information - {{end}}
+
+{{define "body"}}
+<table class="table table-striped">
+  <thead>
+    <tr><th>Key</th><th>Value</th></tr>
+  </thead>
+  <tbody>
+    {{range $k, $v := .Info}}
+    <tr><td>{{$k}}</td><td>{{$v}}</td></tr>
+    {{end}}
+  </tbody>
+</table>
+{{end}}
+
+{{define "extrahead"}}{{end}}
+
+{{define "extrabody"}}{{end}}

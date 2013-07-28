@@ -4,13 +4,13 @@
 	<div>
 		<h2>Page List</h2>
 		{{if .page_list}}
-		<table>
+		<table class="table table-bordered table-hover">
 			<thead>
 				<tr>
 				<th>#</th>
 				<th>title</th>
 				<th>attachments</th>
-				<th>x</th>
+				<th>Action</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -19,7 +19,7 @@
 					<td>{{$i}}</td>
 					<td><a href="/page/{{$p.ID}}" title="view page">{{$p.Title}}</a></td>
 					<td></td>
-					<td><a href="/admin/page/edit?page-id={{$p.ID}}">Edit</a></td>
+					<td><a href="/admin/page/edit?page-id={{$p.ID}}"><i class="icon-edit"></i></a></td>
 				</tr>
 				{{end}}
 			</tbody>

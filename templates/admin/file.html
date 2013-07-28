@@ -4,7 +4,7 @@
 	<div>
 		<h2>File List</h2>
 		{{if .file_list}}
-		<table>
+		<table class="table table-bordered table-hover">
 			<thead>
 				<tr>
 				<th>#</th>
@@ -19,7 +19,7 @@
 					<td>{{$i}}</td>
 					<td>{{$f.Filename}}</td>
 					<td>{{$f.ContentType}}</td>
-					<td><a href="/file/{{$f.ID}}/{{$f.Filename}}" title="Download {{$f.Filename}}">Download</a></td>
+					<td><a href="/file/{{$f.ID}}/{{$f.Filename}}" title="Download {{$f.Filename}}"><i class="icon-download"></i></a></td>
 				</tr>
 				{{end}}
 			</tbody>
@@ -29,10 +29,12 @@
 		{{end}}
 	</div>
 	<div>
-		<h2>upload file</h2>
 		<form action="{{ .upload_url }}" method="POST" enctype="multipart/form-data">
-			Upload File: <input type="file" name="file"> <br>
-			<input type="submit" name="submit" value="Submit">
+		<fieldset>
+			<legend>upload file</legend>
+			<input type="file" name="file">
+			<button type="submit" name="submit" class="btn btn-primary">Submit</button>
+		</fieldset>
 		</form>
 	</div>
 {{end}}

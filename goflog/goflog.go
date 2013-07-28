@@ -2,40 +2,16 @@ package goflog
 
 import (
 	"appengine"
-	"appengine/datastore"
-	"appengine/user"
-	"fmt"
+
+	_ "errors"
 	"html/template"
-	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strconv"
-	//"path/filepath"
-	_ "errors"
-	"time"
-	//"os"
 	"strings"
 )
 
-type Greeting struct {
-	Author  string
-	Content string
-	Date    time.Time
-}
-
-const (
-	TEMPLATE_DIR       string = "templates"
-	TEMPLATE_THEME_DIR string = "templates/themes/twentyten"
-	TEMPLATE_EXT       string = ".html"
-)
-
 var (
-	/* templates = template.Must(template.ParseFiles(
-	    "templates/home.html",
-	    "templates/admin.html",
-	    "templates/post_edit.html",
-	))*/
 	templates = template.Must(template.ParseFiles(
 		"templates/themes/twentyten/index.html",
 		"templates/themes/twentyten/header.html",
@@ -43,7 +19,6 @@ var (
 		"templates/themes/twentyten/loop.html",
 		"templates/themes/twentyten/sidebar.html",
 	))
-	//tmplPostList = template.Must(template.ParseFiles("templates/post_list.html"))
 
 	tmplPost = template.Must(template.ParseFiles(
 		"templates/themes/twentyten/single.html",
@@ -60,30 +35,8 @@ var (
 		"templates/themes/twentyten/header.html",
 		"templates/themes/twentyten/footer.html",
 	))
-	//tmplTerm = template.Must(template.ParseFiles("templates/term.html"))
 	blog = make(map[string]string)
 )
-
-//func initTemplate() {
-/*fi, err := os.Stat(TEMPLATE_DIR)
-  if err != nil || !fi.IsDir(){
-      log.Printf("Directory %v not exists: %v", TEMPLATE_DIR, err)
-      return
-  }*/
-/*    fis, err := ioutil.ReadDir(TEMPLATE_DIR)
-    if err != nil {
-        log.Printf("Directory %v not exists: %v", TEMPLATE_DIR, err)
-        return 
-    }
-    var tmplFiles []string
-    for _, fi := range fis {
-        if fi.IsDir() || !strings.HasSuffix(fi.Name(), TEMPLATE_EXT) {
-            continue
-        }
-        tmplFiles = append(tmplFiles, filepath.Join(TEMPLATE_DIR, fi.Name()))
-    }
-    templates = template.Must(template.ParseFiles(&tmplFiles))
-}*/
 
 func init() {
 	blog["charset"] = "UTF-8"
@@ -91,30 +44,20 @@ func init() {
 	blog["description"] = "a longer way"
 	blog["siteurl"] = ""
 
-	//initTemplate()
-
 	http.HandleFunc("/", handleHome)
 	http.HandleFunc("/post", handleViewPost)
-
-	http.HandleFunc("/admin/", admin)
-	http.HandleFunc("/admin/post", handlePostList)
-	http.HandleFunc("/admin/post/edit", postEdit)
-	http.HandleFunc("/admin/term", handleTerm)
-	http.HandleFunc("/admin/term/edit", handleTermEdit)
-	http.HandleFunc("/admin/export", handleExport)
-	http.HandleFunc("/admin/maintain", handleMaintain)
-
-	//http.HandleFunc("/welcome", welcome)
-	//http.HandleFunc("/guest", guestHandler)
-	//http.HandleFunc("/sign", sign)
-	//http.HandleFunc("/_ah/login_required", openIdHandler)
 }
 
 func serveError(c appengine.Context, w http.ResponseWriter, err error) {
-	w.WriteHeader(http.StatusInternalServerError)
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	io.WriteString(w, "Internal Server Error")
-	c.Errorf("%v", err)
+	//w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	//w.WriteHeader(http.StatusInternalServerError)
+	//io.WriteString(w, err.Error())
+	c.Errorf("serveError: %v", err)
+	var errText string = err.Error()
+	if !appengine.IsDevAppServer() {
+		errText = "Internal Server Error"
+	}
+	http.Error(w, errText, http.StatusInternalServerError)
 }
 
 func serveNotFound(w http.ResponseWriter, r *http.Request) {
@@ -151,43 +94,19 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-
 		}
 
 		serveNotFound(w, r)
 		return
 	}
 
-	posts, err := GetLatestPosts(c, 10, true)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	/*if err := guestbookTemplate.Execute(w, greetings); err != nil {
-	    http.Error(w, err.Error(), http.StatusInternalServerError)
-	}*/
-	/* if err := templates.ExecuteTemplate(w, "home.html", posts); err != nil {
-	    http.Error(w, err.Error(), http.StatusInternalServerError)
-	}*/
-
-	/* for i := 0; i < len(posts); i++ {
-	   posts[i].HTMLContent = template.HTML(posts[i].Content)
-	 }*/
-
-	data := make(map[string]interface{})
-	data["Posts"] = posts
-	data["Blog"] = blog
-	data["Categories"] = GetCategories(c)
-	if err := templates.Execute(w, data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	http.ServeFile(w, r, "templates/index.html")
+	return
 }
 
 func handleViewPost(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
-	var postID int64
-	var post *Post = nil
+
 	//var postKey *datastore.Key
 
 	idStr := r.FormValue("id")
@@ -195,24 +114,34 @@ func handleViewPost(w http.ResponseWriter, r *http.Request) {
 	singlePost := true
 	var posts []Post
 
-	if i, err := strconv.Atoi(idStr); err != nil {
-		c.Infof("Failed to convert str to int64: ", i)
-	} else {
-		postID = int64(i)
-		//postKey = CreatePostKey(c, postID)
-		post = GetPostByID(c, postID)
-	}
-	if post != nil && post.Published {
-		//posts[0] = *post
-		posts = append(posts, *post)
+	if idStr != "" {
+		if i, err := strconv.Atoi(idStr); err == nil {
+			post := GetPostByID(c, int64(i))
+			if post != nil && post.Published {
+				//posts[0] = *post
+				posts = append(posts, *post)
+			}
+		} else {
+			c.Debugf("Failed to convert str to int64 for post_id: ,%v", idStr)
+		}
+
 	} else if cateIDStr != "" {
+		singlePost = false
+
 		if cateID, err := strconv.Atoi(cateIDStr); err == nil {
 			posts = GetPostByCategory(c, int64(cateID), true)
 		}
-
-		singlePost = false
 	} else {
-		log.Print("Post not found for URL", r.URL.Path)
+		singlePost = false
+		var err error
+		posts, err = GetLatestPosts(c, 10, true)
+		if err != nil {
+			c.Errorf("Error when GetLatestPosts: %v", err)
+		}
+	}
+
+	if len(posts) == 0 {
+		c.Debugf("Post not found for URL %v", r.URL.Path)
 		serveNotFound(w, r)
 		return
 	}
@@ -231,120 +160,6 @@ func handleViewPost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := tmpl.Execute(w, model); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		serveError(c, w, err)
 	}
-}
-
-func home(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	q := datastore.NewQuery("Greeting").Order("-Date").Limit(10)
-	greetings := make([]Greeting, 0, 10)
-	if _, err := q.GetAll(c, &greetings); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	/*if err := guestbookTemplate.Execute(w, greetings); err != nil {
-	    http.Error(w, err.Error(), http.StatusInternalServerError)
-	}*/
-	if err := templates.ExecuteTemplate(w, "home.html", greetings); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-}
-
-func root(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	q := datastore.NewQuery("Greeting").Order("-Date").Limit(10)
-	greetings := make([]Greeting, 0, 10)
-	if _, err := q.GetAll(c, &greetings); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if err := guestbookTemplate.Execute(w, greetings); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	//fmt.Fprint(w, gustbookForm)
-}
-
-var guestbookTemplate = template.Must(template.New("sign").Parse(guestbookTemplateHTML))
-
-const guestbookTemplateHTML = `
-<html>
-  <body>
-    {{range .}}
-      {{with .Author}}
-        <p><b>{{.}}</b> wrote:</p>
-      {{else}}
-        <p>An anonymous person wrote:</p>
-      {{end}}
-      <pre>{{.Content}}</pre>
-    {{end}}
-    <form action="/sign" method="post">
-      <div><textarea name="content" rows="3" cols="60"></textarea></div>
-      <div><input type="submit" value="Sign Guestbook"></div>
-    </form>
-  </body>
-</html>
-`
-
-const gustbookForm = `
-<html>
-    <body>
-        <form action="/sign" method="post">
-          <div><textarea name="content" rows="3" cols="6"> </textarea></div>
-          <div><input type="submit" value="Sign Guestbook"></div>
-        </form>
-    </body>
-</html>
-`
-
-func sign(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	g := Greeting{
-		Content: r.FormValue("content"),
-		Date:    time.Now(),
-	}
-
-	if u := user.Current(c); u != nil {
-		g.Author = u.String()
-	}
-
-	_, err := datastore.Put(c, datastore.NewIncompleteKey(c, "Greeting", nil), &g)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	/*err := signTemplate.Execute(w, r.FormValue("content"))
-	  if err != nil {
-	      http.Error(w, err.Error(), http.StatusInternalServerError)
-	  }*/
-	http.Redirect(w, r, "/", http.StatusFound)
-}
-
-var signTemplate = template.Must(template.New("sign").Parse(signTemplateHTML))
-
-const signTemplateHTML = `
-<html>
-  <body>
-    <p>you wrote:</p>
-    <pre>{{.}}</pre>
-  </body>
-</html>
-`
-
-func guestHandler(w http.ResponseWriter, r *http.Request) {
-	c := appengine.NewContext(r)
-	u := user.Current(c)
-	if u == nil {
-		url, err := user.LoginURL(c, r.URL.String())
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Location", url)
-		w.WriteHeader(http.StatusFound)
-		return
-	}
-	fmt.Fprint(w, "Hello, world!", u)
 }
