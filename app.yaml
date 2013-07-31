@@ -30,6 +30,9 @@ handlers:
 - url: /.*
   script: _go_app
 
+inbound_services:
+- warmup
+
 skip_files:
 - ^(.*/)?app\.yaml
 - ^(.*/)?app\.yml
