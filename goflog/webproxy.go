@@ -91,10 +91,7 @@ func handleBlogProxy(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 	client := urlfetch.Client(c)
 
-	target_url := "http://localhost:8080"
-	if true {
-		target_url = "http://viiflog.appspot.com"
-	}
+	target_url := blog["blog_url"]
 	targetURL, err := url.Parse(target_url)
 
 	outreq := new(http.Request)

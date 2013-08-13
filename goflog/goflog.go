@@ -2,9 +2,11 @@ package goflog
 
 import (
 	"appengine"
-
+	"encoding/json"
 	_ "errors"
 	"html/template"
+	"io/ioutil"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -43,9 +45,36 @@ func init() {
 	blog["name"] = "Vika's Blog"
 	blog["description"] = "a longer way"
 	blog["siteurl"] = ""
+	//blog["blog_url"] = "http://localhost:8012"
+	loadConfig()
 
 	http.HandleFunc("/", handleHome)
 	http.HandleFunc("/post", handleViewPost)
+}
+
+func loadConfig() {
+	var configFile string = "config.json"
+	if strings.Index(appengine.ServerSoftware(), "Dev") >= 0 {
+		configFile = "config_dev.json"
+	}
+	log.Println("Start to load config from file ", configFile)
+
+	buf, err := ioutil.ReadFile(configFile)
+	if err != nil {
+		log.Printf("Error when read config file %v, %v", configFile, err)
+		return
+	}
+	log.Printf("config file length is %v", len(buf))
+
+	config := make(map[string]interface{}, 0)
+	err = json.Unmarshal(buf, &config)
+	if err != nil {
+		log.Printf("Error when Unmarshal config json: %v", err)
+		return
+	}
+	for k, v := range config {
+		blog[k] = v.(string)
+	}
 }
 
 func serveError(c appengine.Context, w http.ResponseWriter, err error) {

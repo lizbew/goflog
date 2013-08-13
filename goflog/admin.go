@@ -3,6 +3,7 @@ package goflog
 import (
 	"appengine"
 	"appengine/datastore"
+	"appengine/runtime"
 	"appengine/user"
 	"net/http"
 	"strconv"
@@ -230,6 +231,12 @@ func handleServerInfo(w http.ResponseWriter, r *http.Request) {
 		"ServerSoftware":         appengine.ServerSoftware(),
 		"VersionID":              appengine.VersionID(c),
 	}
+
+	if resourceStat, err := runtime.Stats(c); err == nil {
+		info["CPU Total"] = strconv.FormatFloat(resourceStat.CPU.Total, 'f', 2, 64)
+		info["Mem Current"] = strconv.FormatFloat(resourceStat.RAM.Current, 'f', 2, 64)
+	}
+
 	executeTemplate(w, "serverInfo", http.StatusOK, map[string]interface{}{
 		"Info": info,
 	})
