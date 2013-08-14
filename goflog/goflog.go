@@ -129,8 +129,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.ServeFile(w, r, "templates/index.html")
-	return
+	executeTemplate(w, "home", http.StatusOK, nil)
 }
 
 func handleViewPost(w http.ResponseWriter, r *http.Request) {
