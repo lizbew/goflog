@@ -3,6 +3,8 @@ package goflog
 import (
 	"appengine"
 	"appengine/urlfetch"
+	"encoding/base64"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -12,25 +14,9 @@ import (
 	"strings"
 )
 
-var prxyPage = `
-<html>
-<head>
-<title>Simple Proxy</title>
-</head>
-<body>
-<div>
-<input id="weburl" type="text" name="weburl">
-<input type="button" value="Go" onclick="openFor();return false;">
-</div>
-<script type="text/javascript">
-function openFor() {
-var l = document.getElementById("weburl").value;
-window.location.href="/admin/webproxy/?url="+ encodeURIComponent(l);
-}
-</script>
-</body>
-</html>
-`
+var (
+	ErrProxyNoURLParam = errors.New("No param url")
+)
 
 func writeProxyResponse(c appengine.Context, w http.ResponseWriter, resp *http.Response) {
 	if resp.Header != nil {
@@ -51,30 +37,44 @@ func writeProxyResponse(c appengine.Context, w http.ResponseWriter, resp *http.R
 	w.Write(result)
 }
 
+func DecodeProxyUrl(encodedURL string) (weburl string, reterr error) {
+	if encodedURL != "" {
+		if strings.HasPrefix(encodedURL, "http:") || strings.HasPrefix(encodedURL, "https:") {
+			weburl = encodedURL
+			return
+		}
+		if buf, err := base64.URLEncoding.DecodeString(encodedURL); err == nil {
+			weburl = string(buf)
+			if !strings.HasPrefix(weburl, "http:") && !strings.HasPrefix(weburl, "https:") {
+				weburl = "http://" + weburl
+			}
+			return
+		} else {
+			reterr = err
+		}
+	} else {
+		reterr = ErrProxyNoURLParam
+	}
+	return
+}
+
 func handleWebProxy(w http.ResponseWriter, r *http.Request) {
 	c := appengine.NewContext(r)
 
-	weburl := r.FormValue("url")
-	if weburl == "" {
-		w.Header().Set("Content-Type", "text/html;charset=utf-8")
-		//io.WriteString(w, prxyPage)
-		fmt.Fprint(w, prxyPage)
-		return
-	}
-	c.Debugf("Param url is: %v", weburl)
-
-	if !strings.HasPrefix(weburl, "http:") && !strings.HasPrefix(weburl, "https:") {
-		weburl = "http://" + weburl
-		var newURL = r.URL
-		q := newURL.Query()
-		q.Set("url", weburl)
-		newURL.RawQuery = q.Encode()
-
-		http.Redirect(w, r, newURL.String(), http.StatusFound)
+	weburl, err := DecodeProxyUrl(r.FormValue("url"))
+	if err != nil {
+		if err != ErrProxyNoURLParam {
+			c.Debugf("Error when get param url: %v", err)
+		}
+		executeTemplate(w, "webproxy", http.StatusOK, nil)
 		return
 	}
 	c.Debugf("Proxy for: %v", weburl)
+	fetchUrlToResponse(c, w, weburl)
 
+}
+
+func fetchUrlToResponse(c appengine.Context, w http.ResponseWriter, weburl string) {
 	client := urlfetch.Client(c)
 	resp, err := client.Get(weburl)
 	if err != nil {
@@ -107,7 +107,7 @@ func handleBlogProxy(w http.ResponseWriter, r *http.Request) {
 	if clientIp, _, err := net.SplitHostPort(r.RemoteAddr); err == nil {
 		outreq.Header.Set("X-Forwarded-For", clientIp)
 	}
-	outreq.Header.Set("X-Viifly", "http://blog.viifly.com")
+	outreq.Header.Set("X-Viifly", fmt.Sprintf("%v://%v", r.URL.Scheme, r.URL.Host))
 
 	//resp, err := http.DefaultClient.Do(outreq)
 	resp, err := client.Do(outreq)

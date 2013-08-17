@@ -1,0 +1,43 @@
+{{define "base"}}<!DOCTYPE html>
+<html>
+<head>
+<title>Simple Web Proxy</title>
+</head>
+<body>
+<div>
+	<form action="." method="POST">
+		<input id="weburl" type="text" name="weburl">
+		<input type="button" value="Go" onclick="openFor();return false;">
+	</form>
+</div>
+<!-- js base64 from https://github.com/dankogai/js-base64 -->
+<script type="text/javascript" src="/static/js/base64.js"></script>
+<script type="text/javascript">
+function openFor() {
+	var weburl = document.getElementById("weburl").value;
+	if (!!weburl) {
+		var frageStart = weburl.indexOf('#');
+		var fragement = '';
+		if (frageStart > 0) {
+			fragement = weburl.substr(frageStart)
+			weburl = weburl.substr(0, frageStart)
+		}
+		if (weburl.length > 0) {
+			window.location.href = '/admin/webproxy/?url=' + Base64.encodeURI(supleSchema(weburl)) + fragement;
+			return false;
+		}
+	}
+	window.alert("Please input valid URL!");
+	return false;
+}
+
+function supleSchema(orgUrl) {
+	if (orgUrl.indexOf('http://') != 0 && orgUrl.indexOf('https://') != 0) {
+		orgUrl = 'http://' + orgUrl
+	}
+	return orgUrl
+}
+</script>
+</body>
+</html>
+{{end}}

@@ -9,8 +9,8 @@ $(function() {
 				this.empty();
 				var containerEle = this;
 				jQuery.each(resp.posts, function(index, post){
-					var a = $('<li></li>').append(post.title);
-					containerEle.append(a);
+					var t = '<li><a href="'+post.url+'" title="'+post.title+'">'+post.title+'</a></li>';
+					containerEle.append(t);
 				});
 			} else {
 				containerEle.append('<li>No Post Found</li>')

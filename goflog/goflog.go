@@ -106,20 +106,15 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 			c.Debugf("Referer: %v", ref)
 			if refURL, err := url.Parse(ref); err == nil {
 				if strings.Index(refURL.Path, "/webproxy/") >= 0 {
-					q := refURL.Query()
-					prxyForUrlString := q.Get("url")
-					prxyForURL, err := url.Parse(prxyForUrlString)
-					if err == nil {
-						prxyForURL.Path = r.URL.Path
-						prxyForURL.RawQuery = r.URL.RawQuery
-						prxyForURL.Fragment = r.URL.Fragment
-						q.Set("url", prxyForURL.String())
-						refURL.RawQuery = q.Encode()
-						r.URL = refURL
-						r.Header.Set("Referer", prxyForUrlString)
-						//http.Redirect(w, r, refURL.String(), http.StatusFound)
-						handleWebProxy(w, r)
-						return
+					c.Debugf("Handle request reference from webproxy")
+					if originProxyUrlString, err := DecodeProxyUrl(refURL.Query().Get("url")); err == nil {
+						if prxyForURL, err := url.Parse(originProxyUrlString); err == nil {
+							prxyForURL.Path = r.URL.Path
+							prxyForURL.RawQuery = r.URL.RawQuery
+							prxyForURL.Fragment = r.URL.Fragment
+							fetchUrlToResponse(c, w, prxyForURL.String())
+							return
+						}
 					}
 				}
 			}

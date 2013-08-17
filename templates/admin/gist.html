@@ -1,0 +1,100 @@
+{{define "title"}}Manage Gist - Admin{{end}}
+
+{{define "body"}}
+	<div>
+		<h2>Gist List</h2>
+		{{if .gist_list}}
+		<table class="table table-bordered table-hover">
+			<thead>
+				<tr>
+				<th>#</th>
+				<th>Gist ID</th>
+				<th>Description</th>
+				<th>Gist Page</th>
+				<th>Action</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{range $i, $g := .gist_list}}
+				<tr>
+					<td>{{$i}}</td>
+					<td>{{$g.ID}}</td>
+					<td>{{$g.Description}}</td>
+					<td>{{$g.HTMLURL}}</td>
+					<td>
+						<a href="/admin/gist/edit?gistid={{$g.ID}}&amp;action=refresh" titile="refesh">refesh</a>
+						<a href="/admin/gist/edit?gistid={{$g.ID}}&amp;action=delete" title="delete">delete</a>
+					</td>
+				</tr>
+				{{end}}
+			</tbody>
+		</table>
+		{{else}}
+		<div>No Gist Found</div>
+		{{end}}
+		<div><a href="#add-gist-dialog" role="button" class="btn" data-toggle="modal">Add Git</a></div>
+	</div>
+	<div id="add-gist-dialog" class="modal hide fade" abindex="-1" role="dialog" aria-labelledby="add-gist-label" aria-hidden="true">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			<h3 id="add-gist-label">Add Gist</h3>
+		</div>
+		<div class="modal-body">
+			<form>
+				<fieldset>
+					<label for="gist-id">gist id</label>
+					<input type="text" id="gist-id" value=""></input>
+				</fieldset>
+			</form>
+		</div>
+		<div class="modal-footer">
+			<button class="btn" data-dismiss="modal" aria-hidden="true">Close</button >
+			<button id="btn-save" class="btn btn-primary">Save</button >
+		</div>
+	</div>
+{{end}}
+
+{{define "extrahead"}}{{end}}
+
+{{define "extrabody"}}
+<script type="text/javascript">
+function checkRegexp( o, regexp, n ) {
+  if ( !( regexp.test( o.val() ) ) ) {
+    //o.addClass( "ui-state-error" );
+    //updateTips( n );
+    return false;
+  } else {
+    return true;
+  }
+}
+
+$(function(){
+	$('#btn-save').click(function(){
+		var gistId = $('#gist-id');
+		var bValid = checkRegexp(gistId, /^[1-9][0-9]*$/i, 'Gist ID is required, number');
+
+		if (bValid) {
+			$.ajax({
+				url: '/admin/gist/edit',
+				type: 'POST',
+				dataType: 'json',
+				data: {
+					gistid: $('#gist-id').val(),
+					action: 'add'
+				},
+				success: function(data, textStatus, jqXHR) {
+					console.log("success" + data);
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					console.log("error" + textStatus);
+				}
+				/*complete: function(jqXHR, textStatus) {
+					alert(jqXHR.responseText);
+				}*/
+			});
+			$('#add-gist-dialog').modal('hide');
+		}
+	});
+});
+</script>
+{{end}}
