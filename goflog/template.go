@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/url"
 	"text/template"
+	"time"
 )
 
 var (
@@ -16,6 +17,10 @@ var (
 func urlFmt(path string) string {
 	u := url.URL{Path: path}
 	return u.String()
+}
+
+func gistCopyAtFmt(t time.Time) string {
+	return t.Format(time.RFC3339)
 }
 
 func executeTemplate(w http.ResponseWriter, name string, status int, data interface{}) error {
@@ -43,6 +48,7 @@ var tpls = map[string]*template.Template{
 
 var funcs = template.FuncMap{
 	"url": urlFmt,
+	"gistCopyAtFmt": gistCopyAtFmt,
 }
 
 func newTemplate(files ...string) *template.Template {

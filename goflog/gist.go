@@ -123,13 +123,15 @@ func fetchGist(c appengine.Context, gistID string, gist *GistCopy) error {
 		return err
 	}
 
-	if msg, ok := gistJson["message"]; ok && msg == "Not Found" {
-		c.Warningf("Not found gist %v", gistID)
+	if msg, ok := gistJson["message"]; ok {
+		c.Warningf("Not found gist %v, with message: %v", gistID, msg)
 		return ErrNotFoundGist
 	}
 
 	gist.ID = gistID
-	gist.Description = gistJson["description"].(string)
+	if desc, ok := gistJson["description"].(string); ok {
+		gist.Description = desc
+	}
 	gist.HTMLURL = gistJson["html_url"].(string)
 	gist.FilesContent, _ = json.Marshal(gistJson["files"])
 	gist.CopyAt = time.Now()

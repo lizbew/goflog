@@ -3,12 +3,17 @@
 {{define "body"}}
 	<div>
 		<h2>Gist List</h2>
+		<div id="gist-alert" class="hide alert">
+			<button type="button" class="close" data-dismiss="alert">&times;</button>
+			<p id="alert-msg">Add success.</p>
+		</div>
 		{{if .gist_list}}
 		<table class="table table-bordered table-hover">
 			<thead>
 				<tr>
 				<th>#</th>
 				<th>Gist ID</th>
+				<th>Add Date</th>
 				<th>Description</th>
 				<th>Gist Page</th>
 				<th>Action</th>
@@ -19,11 +24,12 @@
 				<tr>
 					<td>{{$i}}</td>
 					<td>{{$g.ID}}</td>
+					<td>{{$g.CopyAt | gistCopyAtFmt}}</td>
 					<td>{{$g.Description}}</td>
 					<td>{{$g.HTMLURL}}</td>
 					<td>
-						<a href="/admin/gist/edit?gistid={{$g.ID}}&amp;action=refresh" titile="refesh">refesh</a>
-						<a href="/admin/gist/edit?gistid={{$g.ID}}&amp;action=delete" title="delete">delete</a>
+						<a href="/admin/gist/edit?gistid={{$g.ID}}&amp;action=refresh" titile="refesh" class="gist-refresh">refesh</a>
+						<a href="/admin/gist/edit?gistid={{$g.ID}}&amp;action=delete" title="delete" class="gist-delete">delete</a>
 					</td>
 				</tr>
 				{{end}}
@@ -68,6 +74,34 @@ function checkRegexp( o, regexp, n ) {
   }
 }
 
+function handleUpdateGist(event) {
+	event.preventDefault();
+	var updateUrl = $(event.target).attr('href');
+	if (!updateUrl) return;
+
+	var act = '';
+	if (event.data != null) {
+		act = event.data;
+	}
+	$.ajax(updateUrl, {
+		type: 'GET',
+		dataType: 'json',
+		success: function(data, textStatus, jqXHR) {
+					$('#alert-msg').text(act + ' success.');
+					$('#gist-alert').removeClass('alert-success alert-error').addClass('alert-success').show();
+				},
+				error: function(jqXHR, textStatus, errorThrown) {
+					var msg = "";
+					try {
+						var resp = $.parseJSON(jqXHR.responseText);
+						msg = resp.message;
+					} catch(e){}
+					$('#alert-msg').text(act + ' failed: ' + msg);
+					$('#gist-alert').removeClass('alert-success alert-error').addClass('alert-error').show();
+				}
+	});
+}
+
 $(function(){
 	$('#btn-save').click(function(){
 		var gistId = $('#gist-id');
@@ -83,10 +117,17 @@ $(function(){
 					action: 'add'
 				},
 				success: function(data, textStatus, jqXHR) {
-					console.log("success" + data);
+					$('#alert-msg').text('Add success.');
+					$('#gist-alert').removeClass('alert-success alert-error').addClass('alert-success').show();
 				},
 				error: function(jqXHR, textStatus, errorThrown) {
-					console.log("error" + textStatus);
+					var msg = "";
+					try {
+						var resp = $.parseJSON(jqXHR.responseText);
+						msg = resp.message;
+					} catch(e){}
+					$('#alert-msg').text('Failed: ' + msg);
+					$('#gist-alert').removeClass('alert-success alert-error').addClass('alert-error').show();
 				}
 				/*complete: function(jqXHR, textStatus) {
 					alert(jqXHR.responseText);
@@ -95,6 +136,9 @@ $(function(){
 			$('#add-gist-dialog').modal('hide');
 		}
 	});
+
+	$('.gist-refresh').click('refresh', handleUpdateGist);
+	$('.gist-delete').click('delete', handleUpdateGist);
 });
 </script>
 {{end}}
